@@ -23,6 +23,9 @@
    report tests that passed and per-device specific things like plots
    or quality metrics
 
+ * test fixture should verify full power operation and monitor voltage
+   ripple to ensure all capacitance operating correctly
+
  * devkit nice to haves
    * Hard-fault or assert needs to reset the device and latch a fault
    * add multiplex_tool register stuff to reference
