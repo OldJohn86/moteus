@@ -4,11 +4,7 @@
  * infinite rotation
    * control uses floats, which fail once the position gets above a
      few hundred revolutions
-
-
- * bring up 4.4
-   * verify that I made new version pins
-   * double check the pins that I changed
+   * Moving at speed 0.01 stops working just when reaching 8 rotations
 
  * Make test fixture for servos
    * perform actual calibration
