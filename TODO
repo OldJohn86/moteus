@@ -24,7 +24,6 @@
 
  * devkit nice to haves
    * Hard-fault or assert needs to reset the device and latch a fault
-   * add multiplex_tool register stuff to reference
    * add tview delays and multi unit features
    * document how to change id
 
