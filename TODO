@@ -40,6 +40,9 @@
 
  * Add a "brake" mode that just shorts the terminals all to ground
 
+ * moteus_tool should always command a "tel stop" when doing anything
+   other than console operations
+
  * Make moteus_tool servo auto-detection more robust
    * especially in the face of things spewing
  * Get all mbed ticker stuff out of the link, we never want it used
