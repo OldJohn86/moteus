@@ -1,3 +1,7 @@
+ * Add maximum speed configuration, handled the same as position limits
+ * If anything limits current, we should probably stop integrating the
+   position controller?
+
  * No guard against running moteus_tool and tview at the same time
  * Limit maximum controllable speed to what the encoder can handle
 
