@@ -4,6 +4,7 @@
 
  * No guard against running moteus_tool and tview at the same time
  * Limit maximum controllable speed to what the encoder can handle
+ * Get drv8323 over-current setting so that it actually works
 
  * infinite rotation
    * control uses floats, which fail once the position gets above a
