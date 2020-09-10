@@ -943,7 +943,8 @@ class BldcServo::Impl {
       case kCurrent:
       case kPosition:
       case kPositionTimeout:
-      case kZeroVelocity: {
+      case kZeroVelocity:
+      case kStayWithinBounds: {
         return true;
       }
     }
@@ -978,7 +979,8 @@ class BldcServo::Impl {
       case kCurrent:
       case kPosition:
       case kPositionTimeout:
-      case kZeroVelocity: {
+      case kZeroVelocity:
+      case kStayWithinBounds: {
         switch (status_.mode) {
           case kNumModes: {
             MJ_ASSERT(false);
@@ -1007,8 +1009,10 @@ class BldcServo::Impl {
           case kVoltageDq:
           case kCurrent:
           case kPosition:
-          case kZeroVelocity: {
-            if (data->mode == kPosition && ISR_IsOutsideLimits()) {
+          case kZeroVelocity:
+          case kStayWithinBounds: {
+            if ((data->mode == kPosition || data->mode == kStayWithinBounds) &&
+                ISR_IsOutsideLimits()) {
               status_.mode = kFault;
               status_.fault = errc::kStartOutsideLimit;
             } else {
@@ -1080,6 +1084,7 @@ class BldcServo::Impl {
         case kPosition:
         case kPositionTimeout:
         case kZeroVelocity:
+        case kStayWithinBounds:
           return true;
       }
       return false;
@@ -1112,6 +1117,7 @@ class BldcServo::Impl {
         case kPosition:
         case kPositionTimeout:
         case kZeroVelocity:
+        case kStayWithinBounds:
           return true;
       }
       return false;
@@ -1161,7 +1167,7 @@ class BldcServo::Impl {
       }
     }
 
-    if (status_.mode == kPosition &&
+    if ((status_.mode == kPosition || status_.mode == kStayWithinBounds) &&
         !std::isnan(status_.timeout_s) &&
         status_.timeout_s <= 0.0f) {
       status_.mode = kPositionTimeout;
@@ -1225,6 +1231,10 @@ class BldcServo::Impl {
       case kPositionTimeout:
       case kZeroVelocity: {
         ISR_DoZeroVelocity(sin_cos, data);
+        break;
+      }
+      case kStayWithinBounds: {
+        ISR_DoStayWithinBounds(sin_cos, data);
         break;
       }
     }
@@ -1501,6 +1511,37 @@ class BldcServo::Impl {
 #endif
 
     ISR_DoCurrent(sin_cos, d_A, q_A);
+  }
+
+  void ISR_DoStayWithinBounds(const SinCos& sin_cos, CommandData* data) {
+    const auto target_position = [&]() MOTEUS_CCM_ATTRIBUTE -> std::optional<float> {
+      if (!std::isnan(data->bounds_min) &&
+          status_.unwrapped_position < data->bounds_min) {
+        return data->bounds_min;
+      }
+      if (!std::isnan(data->bounds_max) &&
+          status_.unwrapped_position > data->bounds_max) {
+        return data->bounds_max;
+      }
+      return {};
+    }();
+
+    if (!target_position) {
+      ISR_ClearPid(kAlwaysClear);
+      ISR_DoCurrent(sin_cos, 0.0f, 0.0f);
+      return;
+    }
+
+    // Control position to whichever bound we are currently violating.
+    PID::ApplyOptions apply_options;
+    apply_options.kp_scale = data->kp_scale;
+    apply_options.kd_scale = data->kd_scale;
+
+    data->position = *target_position;
+    data->velocity = 0.0;
+
+    ISR_DoPositionCommon(sin_cos, data, apply_options,
+                         data->max_torque_Nm, 0.0f, 0.0f);
   }
 
   float LimitPwm(float in) MOTEUS_CCM_ATTRIBUTE {
