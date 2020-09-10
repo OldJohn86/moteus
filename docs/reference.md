@@ -596,7 +596,8 @@ d within <lowbound> <highbound> <max_torque> [options...]
 ```
 
 The fields have the same semantics as for the register protocol
-documented above.
+documented above.  The options are the same as for `d pos`, with the
+exception of stop position which is not supported.
 
 ### `d index` ###
 
