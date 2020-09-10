@@ -1527,8 +1527,18 @@ class BldcServo::Impl {
     }();
 
     if (!target_position) {
-      ISR_ClearPid(kAlwaysClear);
-      ISR_DoCurrent(sin_cos, 0.0f, 0.0f);
+      status_.pid_position.Clear();
+      status_.control_position = std::numeric_limits<float>::quiet_NaN();
+
+      // In this region, we still apply feedforward torques if they
+      // are present.
+      const float limited_torque_Nm =
+          Limit(data->feedforward_Nm, -data->max_torque_Nm, data->max_torque_Nm);
+      control_.torque_Nm = limited_torque_Nm;
+      const float limited_q_A =
+          torque_to_current(limited_torque_Nm * motor_.unwrapped_position_scale);
+
+      ISR_DoCurrent(sin_cos, 0.0f, limited_q_A);
       return;
     }
 
@@ -1540,8 +1550,9 @@ class BldcServo::Impl {
     data->position = *target_position;
     data->velocity = 0.0;
 
-    ISR_DoPositionCommon(sin_cos, data, apply_options,
-                         data->max_torque_Nm, 0.0f, 0.0f);
+    ISR_DoPositionCommon(
+        sin_cos, data, apply_options,
+        data->max_torque_Nm, data->feedforward_Nm, 0.0f);
   }
 
   float LimitPwm(float in) MOTEUS_CCM_ATTRIBUTE {

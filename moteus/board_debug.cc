@@ -415,7 +415,7 @@ class BoardDebug::Impl {
       BldcServo::CommandData command;
       command.timeout_s = std::numeric_limits<float>::quiet_NaN();
 
-      if (!ParseOptions(&command, &tokenizer, "pdt")) {
+      if (!ParseOptions(&command, &tokenizer, "pdtf")) {
         WriteMessage(response, "unknown option\r\n");
         return;
       }
