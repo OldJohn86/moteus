@@ -6,11 +6,6 @@
  * Limit maximum controllable speed to what the encoder can handle
  * Get drv8323 over-current setting so that it actually works
 
- * infinite rotation
-   * control uses floats, which fail once the position gets above a
-     few hundred revolutions
-   * Moving at speed 0.01 stops working just when reaching 8 rotations
-
  * Make test fixture for servos
    * perform actual calibration
    * then connect to a dynamometer of some kind
@@ -30,7 +25,6 @@
  * devkit nice to haves
    * Hard-fault or assert needs to reset the device and latch a fault
    * add tview delays and multi unit features
-   * document how to change id
 
  * the "fault" state should flash the LEDs in a pattern that is
    distinct from the hard fault state (or I guess the same if
