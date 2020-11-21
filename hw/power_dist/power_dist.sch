@@ -3521,22 +3521,34 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <attribute name="POPULATE" value="0"/>
 </part>
 <part name="P1" library="precharge" deviceset="XT30" device="P">
-<attribute name="POPULATE" value="0"/>
+<attribute name="MF" value="AMASS"/>
+<attribute name="MPN" value="XT30UPB-F"/>
+<attribute name="POPULATE" value="1"/>
 </part>
 <part name="P2" library="precharge" deviceset="XT30" device="P">
-<attribute name="POPULATE" value="0"/>
+<attribute name="MF" value="AMASS"/>
+<attribute name="MPN" value="XT30UPB-F"/>
+<attribute name="POPULATE" value="1"/>
 </part>
 <part name="P3" library="precharge" deviceset="XT30" device="P">
-<attribute name="POPULATE" value="0"/>
+<attribute name="MF" value="AMASS"/>
+<attribute name="MPN" value="XT30UPB-F"/>
+<attribute name="POPULATE" value="1"/>
 </part>
 <part name="P4" library="precharge" deviceset="XT30" device="P">
-<attribute name="POPULATE" value="0"/>
+<attribute name="MF" value="AMASS"/>
+<attribute name="MPN" value="XT30UPB-F"/>
+<attribute name="POPULATE" value="1"/>
 </part>
 <part name="P5" library="precharge" deviceset="XT30" device="P">
-<attribute name="POPULATE" value="0"/>
+<attribute name="MF" value="AMASS"/>
+<attribute name="MPN" value="XT30UPB-F"/>
+<attribute name="POPULATE" value="1"/>
 </part>
 <part name="P6" library="precharge" deviceset="XT30" device="P">
-<attribute name="POPULATE" value="0"/>
+<attribute name="MF" value="AMASS"/>
+<attribute name="MPN" value="XT30UPB-F"/>
+<attribute name="POPULATE" value="1"/>
 </part>
 <part name="U2" library="precharge" deviceset="STM32G474CEU6" device="">
 <attribute name="MF" value="ST"/>
@@ -3666,12 +3678,27 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <attribute name="MPN" value="PSMN4R8-100BSEJ"/>
 <attribute name="POPULATE" value="1"/>
 </part>
-<part name="R6" library="mfpassives" deviceset="RESISTOR" device="_0603" value="47k 1%"/>
-<part name="R7" library="mfpassives" deviceset="RESISTOR" device="_0603" value="19.1k 1%"/>
-<part name="R8" library="mfpassives" deviceset="RESISTOR" device="_0603" value="140k 1%"/>
-<part name="R9" library="mfpassives" deviceset="RESISTOR" device="_0603" value="6.49k 1%"/>
+<part name="R6" library="mfpassives" deviceset="RESISTOR" device="_0603" value="100k 1%">
+<attribute name="MF" value="YAGEO"/>
+<attribute name="MPN" value="RC0603FR-07100KL"/>
+</part>
+<part name="R7" library="mfpassives" deviceset="RESISTOR" device="_0603" value="40.2k 1%">
+<attribute name="MF" value="YAGEO"/>
+<attribute name="MPN" value="RC0603FR-0740K2L"/>
+</part>
+<part name="R8" library="mfpassives" deviceset="RESISTOR" device="_0603" value="140k 1%">
+<attribute name="MF" value="YAGEO"/>
+<attribute name="MPN" value="RC0603FR-07140KL"/>
+</part>
+<part name="R9" library="mfpassives" deviceset="RESISTOR" device="_0603" value="6.49k 1%">
+<attribute name="MF" value="YAGEO"/>
+<attribute name="MPN" value="RC0603FR-076K49L"/>
+</part>
 <part name="GND10" library="supply1" deviceset="GND" device=""/>
-<part name="R11" library="mfpassives" deviceset="RESISTOR" device="_0603" value="24k 1%"/>
+<part name="R11" library="mfpassives" deviceset="RESISTOR" device="_0603" value="24k 1%">
+<attribute name="MF" value="YAGEO"/>
+<attribute name="MPN" value="RC0603FR-0724KL"/>
+</part>
 <part name="GND11" library="supply1" deviceset="GND" device=""/>
 <part name="C13" library="mfpassives" deviceset="CAPACITOR_NP" device="_0603" value="0.01uF">
 <attribute name="HOUSEPART" value="1"/>
@@ -3681,17 +3708,33 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <attribute name="HOUSEPART" value="1"/>
 <attribute name="MPN" value="MF-CAP-0603-0.01uF"/>
 </part>
-<part name="R12" library="mfpassives" deviceset="RESISTOR" device="_0603" value="1k 1%"/>
+<part name="R12" library="mfpassives" deviceset="RESISTOR" device="_0603" value="1k 1%">
+<attribute name="MF" value="YAGEO"/>
+<attribute name="MPN" value="RC0603FR-071KL"/>
+</part>
 <part name="GND13" library="supply1" deviceset="GND" device=""/>
-<part name="D2" library="mfdiscretesemi" deviceset="DIODES" device="_SOD-123" technology="_1N4148" value="MF-DIO-SOD123-1N4148"/>
-<part name="Q5" library="mfdiscretesemi" deviceset="PNP_BJT" device="_SOT-23-3" technology="_MMBT3906" value="MF-DSC-SOT233-MMBT3906"/>
-<part name="Q4" library="mfdiscretesemi" deviceset="N-CHANNEL_FET" device="_SOT-23-3" technology="_BSS138" value="MF-DSC-SOT233-BSS138"/>
-<part name="R4" library="mfpassives" deviceset="RESISTOR" device="_0603" value="47k 1%"/>
+<part name="D2" library="mfdiscretesemi" deviceset="DIODES" device="_SOD-123" technology="_1N4148" value="MF-DIO-SOD123-1N4148">
+<attribute name="HOUSEPART" value="1"/>
+</part>
+<part name="Q5" library="mfdiscretesemi" deviceset="PNP_BJT" device="_SOT-23-3" technology="_MMBT3906" value="MF-DSC-SOT233-MMBT3906">
+<attribute name="HOUSEPART" value="1"/>
+</part>
+<part name="Q4" library="mfdiscretesemi" deviceset="N-CHANNEL_FET" device="_SOT-23-3" technology="_BSS138" value="MF-DSC-SOT233-BSS138">
+<attribute name="HOUSEPART" value="1"/>
+</part>
+<part name="R4" library="mfpassives" deviceset="RESISTOR" device="_0603" value="140k 1%">
+<attribute name="MF" value="YAGEO"/>
+<attribute name="MPN" value="RC0603FR-07140KL"/>
+</part>
 <part name="C1" library="mfpassives" deviceset="CAPACITOR_NP" device="_0805" value="1uF 100V">
 <attribute name="MF" value="MURATA"/>
 <attribute name="MPN" value="GCM21BC72A105KE36L"/>
 </part>
-<part name="U3" library="power_dist" deviceset="LM5066IPMHE/NOPB" device=""/>
+<part name="U3" library="power_dist" deviceset="LM5066IPMHE/NOPB" device="">
+<attribute name="MF" value="TI"/>
+<attribute name="MPN" value="LM5066IPMHE/NOPB"/>
+<attribute name="POPULATE" value="1"/>
+</part>
 <part name="C12" library="mfpassives" deviceset="CAPACITOR_NP" device="_0603" value="1uF">
 <attribute name="HOUSEPART" value="1"/>
 <attribute name="MPN" value="MF-CAP-0603-1uF"/>
@@ -3718,11 +3761,18 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <attribute name="MF" value="MURATA"/>
 <attribute name="MPN" value="GCM21BC72A105KE36L"/>
 </part>
-<part name="J3" library="power_dist" deviceset="JST-PH5" device="VERT" value="JST-PH5VERT"/>
+<part name="J3" library="power_dist" deviceset="JST-PH5" device="VERT" value="JST-PH5VERT">
+<attribute name="MF" value="JST"/>
+<attribute name="MPN" value="B5B-PH-SM4-TB(LF)(SN)"/>
+<attribute name="POPULATE" value="1"/>
+</part>
 <part name="GND14" library="supply1" deviceset="GND" device=""/>
 <part name="P+9" library="supply1" deviceset="VCC" device=""/>
 <part name="P+8" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+24V" device=""/>
-<part name="R5" library="mfpassives" deviceset="RESISTOR" device="_0603" value="15k 1%"/>
+<part name="R5" library="mfpassives" deviceset="RESISTOR" device="_0603" value="40.2k 1%">
+<attribute name="MF" value="YAGEO"/>
+<attribute name="MPN" value="RC0603FR-0740K2L"/>
+</part>
 <part name="GND15" library="supply1" deviceset="GND" device=""/>
 <part name="C11" library="mfpassives" deviceset="CAPACITOR_NP" device="_0603" value="1uF">
 <attribute name="HOUSEPART" value="1"/>
@@ -3763,14 +3813,17 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <attribute name="MPN" value="MF-RES-0603-220"/>
 </part>
 <part name="P+13" library="supply1" deviceset="VCC" device=""/>
-<part name="Q6" library="mfdiscretesemi" deviceset="NPN_BJT" device="_SOT-23-3" technology="MMBT3904" value="MF-DSC-SOT233-MMBT3904"/>
+<part name="Q6" library="mfdiscretesemi" deviceset="NPN_BJT" device="_SOT-23-3" technology="MMBT3904" value="MF-DSC-SOT233-MMBT3904">
+<attribute name="HOUSEPART" value="1"/>
+</part>
 <part name="GND25" library="supply1" deviceset="GND" device=""/>
 <part name="C17" library="mfpassives" deviceset="CAPACITOR_NP" device="_0603" value="DNP">
-<attribute name="HOUSEPART" value="1"/>
-<attribute name="MPN" value="MF-CAP-0603-1uF"/>
+<attribute name="POPULATE" value="0"/>
 </part>
 <part name="GND26" library="supply1" deviceset="GND" device=""/>
-<part name="R16" library="mfpassives" deviceset="RESISTOR" device="_0603" value="DNP"/>
+<part name="R16" library="mfpassives" deviceset="RESISTOR" device="_0603" value="DNP">
+<attribute name="POPULATE" value="0"/>
+</part>
 </parts>
 <sheets>
 <sheet>
@@ -3847,31 +3900,43 @@ Lower OVLO: 54.87</text>
 <attribute name="POPULATE" x="15.24" y="139.7" size="1.778" layer="96" font="vector" rot="MR0" display="off"/>
 <attribute name="NAME" x="20.32" y="145.542" size="1.778" layer="95" rot="MR0"/>
 <attribute name="VALUE" x="20.32" y="132.334" size="1.778" layer="96" rot="MR0"/>
+<attribute name="MF" x="15.24" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
+<attribute name="MPN" x="15.24" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
 <instance part="P2" gate="G$1" x="27.94" y="139.7" smashed="yes" rot="MR0">
 <attribute name="POPULATE" x="27.94" y="139.7" size="1.778" layer="96" font="vector" rot="MR0" display="off"/>
 <attribute name="NAME" x="33.02" y="145.542" size="1.778" layer="95" rot="MR0"/>
 <attribute name="VALUE" x="33.02" y="132.334" size="1.778" layer="96" rot="MR0"/>
+<attribute name="MF" x="27.94" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
+<attribute name="MPN" x="27.94" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
 <instance part="P3" gate="G$1" x="40.64" y="139.7" smashed="yes" rot="MR0">
 <attribute name="POPULATE" x="40.64" y="139.7" size="1.778" layer="96" font="vector" rot="MR0" display="off"/>
 <attribute name="NAME" x="45.72" y="145.542" size="1.778" layer="95" rot="MR0"/>
 <attribute name="VALUE" x="45.72" y="132.334" size="1.778" layer="96" rot="MR0"/>
+<attribute name="MF" x="40.64" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
+<attribute name="MPN" x="40.64" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
 <instance part="P4" gate="G$1" x="53.34" y="139.7" smashed="yes" rot="MR0">
 <attribute name="POPULATE" x="53.34" y="139.7" size="1.778" layer="96" font="vector" rot="MR0" display="off"/>
 <attribute name="NAME" x="58.42" y="145.542" size="1.778" layer="95" rot="MR0"/>
 <attribute name="VALUE" x="58.42" y="132.334" size="1.778" layer="96" rot="MR0"/>
+<attribute name="MF" x="53.34" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
+<attribute name="MPN" x="53.34" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
 <instance part="P5" gate="G$1" x="66.04" y="139.7" smashed="yes" rot="MR0">
 <attribute name="POPULATE" x="66.04" y="139.7" size="1.778" layer="96" font="vector" rot="MR0" display="off"/>
 <attribute name="NAME" x="71.12" y="145.542" size="1.778" layer="95" rot="MR0"/>
 <attribute name="VALUE" x="71.12" y="132.334" size="1.778" layer="96" rot="MR0"/>
+<attribute name="MF" x="66.04" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
+<attribute name="MPN" x="66.04" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
 <instance part="P6" gate="G$1" x="81.28" y="139.7" smashed="yes" rot="MR0">
 <attribute name="POPULATE" x="81.28" y="139.7" size="1.778" layer="96" font="vector" rot="MR0" display="off"/>
 <attribute name="NAME" x="86.36" y="145.542" size="1.778" layer="95" rot="MR0"/>
 <attribute name="VALUE" x="86.36" y="132.334" size="1.778" layer="96" rot="MR0"/>
+<attribute name="MF" x="81.28" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
+<attribute name="MPN" x="81.28" y="139.7" size="1.778" layer="96" rot="MR0" display="off"/>
 </instance>
 <instance part="U2" gate="G$1" x="447.04" y="152.4" smashed="yes">
 <attribute name="POPULATE" x="447.04" y="152.4" size="1.778" layer="96" font="vector" display="off"/>
@@ -4078,18 +4143,22 @@ Lower OVLO: 54.87</text>
 <instance part="R6" gate="G$1" x="-60.96" y="-25.4" smashed="yes">
 <attribute name="NAME" x="-58.42" y="-23.876" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="-58.42" y="-26.924" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="-60.96" y="-25.4" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="R7" gate="G$1" x="-60.96" y="-38.1" smashed="yes">
 <attribute name="NAME" x="-58.42" y="-36.576" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="-58.42" y="-39.624" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="-60.96" y="-38.1" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="R8" gate="G$1" x="-50.8" y="-20.32" smashed="yes">
 <attribute name="NAME" x="-48.26" y="-18.796" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="-48.26" y="-21.844" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="-50.8" y="-20.32" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="R9" gate="G$1" x="-50.8" y="-40.64" smashed="yes">
 <attribute name="NAME" x="-48.26" y="-39.116" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="-48.26" y="-42.164" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="-50.8" y="-40.64" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="GND10" gate="1" x="-55.88" y="-55.88" smashed="yes">
 <attribute name="VALUE" x="-58.42" y="-58.42" size="1.778" layer="96"/>
@@ -4097,6 +4166,7 @@ Lower OVLO: 54.87</text>
 <instance part="R11" gate="G$1" x="66.04" y="-45.72" smashed="yes">
 <attribute name="NAME" x="68.58" y="-44.196" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="68.58" y="-47.244" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="66.04" y="-45.72" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="GND11" gate="1" x="66.04" y="-55.88" smashed="yes">
 <attribute name="VALUE" x="63.5" y="-58.42" size="1.778" layer="96"/>
@@ -4112,6 +4182,7 @@ Lower OVLO: 54.87</text>
 <instance part="R12" gate="G$1" x="73.66" y="-50.8" smashed="yes">
 <attribute name="NAME" x="76.2" y="-49.276" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="76.2" y="-52.324" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="73.66" y="-50.8" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="GND13" gate="1" x="81.28" y="-78.74" smashed="yes">
 <attribute name="VALUE" x="78.74" y="-81.28" size="1.778" layer="96"/>
@@ -4131,6 +4202,7 @@ Lower OVLO: 54.87</text>
 <instance part="R4" gate="G$1" x="-76.2" y="-15.24" smashed="yes">
 <attribute name="NAME" x="-73.66" y="-13.716" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="-73.66" y="-16.764" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="-76.2" y="-15.24" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="C1" gate="G$1" x="154.94" y="121.92" smashed="yes">
 <attribute name="NAME" x="157.48" y="123.444" size="1.016" layer="95" font="vector" align="top-left"/>
@@ -4140,6 +4212,9 @@ Lower OVLO: 54.87</text>
 <instance part="U3" gate="A" x="-27.94" y="-20.32" smashed="yes">
 <attribute name="NAME" x="2.8956" y="-11.2014" size="2.0828" layer="95" ratio="6" rot="SR0"/>
 <attribute name="VALUE" x="2.2606" y="-13.7414" size="2.0828" layer="96" ratio="6" rot="SR0"/>
+<attribute name="MF" x="-27.94" y="-20.32" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-27.94" y="-20.32" size="1.778" layer="96" display="off"/>
+<attribute name="POPULATE" x="-27.94" y="-20.32" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="C12" gate="G$1" x="50.8" y="-45.72" smashed="yes">
 <attribute name="NAME" x="53.34" y="-44.196" size="1.016" layer="95" font="vector" align="top-left"/>
@@ -4175,6 +4250,9 @@ Lower OVLO: 54.87</text>
 <instance part="J3" gate="A" x="147.32" y="0" smashed="yes">
 <attribute name="NAME" x="142.24" y="8.382" size="1.778" layer="95"/>
 <attribute name="VALUE" x="142.24" y="-9.906" size="1.778" layer="96"/>
+<attribute name="MF" x="147.32" y="0" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="147.32" y="0" size="1.778" layer="96" display="off"/>
+<attribute name="POPULATE" x="147.32" y="0" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="GND14" gate="1" x="162.56" y="-17.78" smashed="yes">
 <attribute name="VALUE" x="160.02" y="-20.32" size="1.778" layer="96"/>
@@ -4188,6 +4266,7 @@ Lower OVLO: 54.87</text>
 <instance part="R5" gate="G$1" x="-76.2" y="-50.8" smashed="yes">
 <attribute name="NAME" x="-73.66" y="-49.276" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="-73.66" y="-52.324" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="-76.2" y="-50.8" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="GND15" gate="1" x="-76.2" y="-60.96" smashed="yes">
 <attribute name="VALUE" x="-78.74" y="-63.5" size="1.778" layer="96"/>
