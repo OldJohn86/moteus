@@ -525,23 +525,6 @@
 </library>
 <library name="precharge">
 <packages>
-<package name="XT90PW-M">
-<pad name="2" x="5.45" y="0" drill="3.6"/>
-<pad name="1" x="-5.45" y="0" drill="3.6"/>
-<pad name="S1" x="-9.45" y="9.4" drill="2"/>
-<pad name="S2" x="9.45" y="9.4" drill="2"/>
-<wire x1="-10.4" y1="-4" x2="-10.4" y2="23" width="0.127" layer="21"/>
-<wire x1="-10.4" y1="23" x2="10.4" y2="23" width="0.127" layer="21"/>
-<wire x1="10.4" y1="23" x2="10.4" y2="-4" width="0.127" layer="21"/>
-<wire x1="10.4" y1="-4" x2="-10.4" y2="-4" width="0.127" layer="21"/>
-<text x="-10.1" y="-6.1" size="1.27" layer="21" font="vector">&gt;NAME</text>
-<polygon width="0.127" layer="39">
-<vertex x="-10.4" y="-4"/>
-<vertex x="-10.4" y="23"/>
-<vertex x="10.4" y="23"/>
-<vertex x="10.4" y="-4"/>
-</polygon>
-</package>
 <package name="XT30P">
 <pad name="1" x="-2.5" y="0" drill="2"/>
 <pad name="2" x="2.5" y="0" drill="2"/>
@@ -936,22 +919,6 @@
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="XT90">
-<gates>
-<gate name="G$1" symbol="CON02" x="0" y="0"/>
-</gates>
-<devices>
-<device name="PW-M" package="XT90PW-M">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="2"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
 <deviceset name="XT30">
 <gates>
 <gate name="G$1" symbol="CON02" x="0" y="0"/>
@@ -2300,6 +2267,18 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <vertex x="2.4" y="0" curve="-90"/>
 <vertex x="0" y="-2.4" curve="-90"/>
 </polygon>
+<polygon width="0.127" layer="1">
+<vertex x="-2.4" y="0" curve="-90"/>
+<vertex x="0" y="2.4" curve="-90"/>
+<vertex x="2.4" y="0" curve="-90"/>
+<vertex x="0" y="-2.4" curve="-90"/>
+</polygon>
+<polygon width="0.127" layer="16">
+<vertex x="-2.4" y="0" curve="-90"/>
+<vertex x="0" y="2.4" curve="-90"/>
+<vertex x="2.4" y="0" curve="-90"/>
+<vertex x="0" y="-2.4" curve="-90"/>
+</polygon>
 </package>
 <package name="M2MOUNT">
 <pad name="P$1" x="0" y="0" drill="2.1"/>
@@ -2309,6 +2288,25 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <vertex x="2" y="0" curve="-90"/>
 <vertex x="0" y="-2" curve="-90"/>
 </polygon>
+</package>
+<package name="XT90PW-M">
+<pad name="2" x="5.45" y="0" drill="3.6"/>
+<pad name="1" x="-5.45" y="0" drill="3.6"/>
+<pad name="S1" x="-9.45" y="9.4" drill="2"/>
+<pad name="S2" x="9.45" y="9.4" drill="2"/>
+<wire x1="-10.4" y1="1" x2="-10.4" y2="23" width="0.127" layer="21"/>
+<wire x1="-10.4" y1="23" x2="10.4" y2="23" width="0.127" layer="21"/>
+<wire x1="10.4" y1="23" x2="10.4" y2="1.1" width="0.127" layer="21"/>
+<text x="-10.1" y="-6.1" size="1.27" layer="21" font="vector">&gt;NAME</text>
+<polygon width="0.127" layer="39">
+<vertex x="-10.4" y="-4"/>
+<vertex x="-10.4" y="23"/>
+<vertex x="10.4" y="23"/>
+<vertex x="10.4" y="-4"/>
+</polygon>
+<wire x1="8.4" y1="-3" x2="-8.4" y2="-3" width="0.127" layer="21"/>
+<wire x1="10.4" y1="1.1" x2="8.4" y2="-3" width="0.127" layer="21"/>
+<wire x1="-10.4" y1="1" x2="-8.4" y2="-3" width="0.127" layer="21"/>
 </package>
 </packages>
 <symbols>
@@ -2489,6 +2487,16 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <wire x1="2.54" y1="2.54" x2="-2.54" y2="-2.54" width="0.254" layer="94"/>
 <text x="-2.54" y="5.08" size="1.27" layer="94">&gt;NAME</text>
 <pin name="1" x="0" y="-5.08" length="middle" direction="pas" rot="R90"/>
+</symbol>
+<symbol name="CON02">
+<wire x1="-5.08" y1="5.08" x2="-5.08" y2="-5.08" width="0.1524" layer="94"/>
+<wire x1="-5.08" y1="-5.08" x2="2.54" y2="-5.08" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="-5.08" x2="2.54" y2="5.08" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="5.08" x2="-5.08" y2="5.08" width="0.1524" layer="94"/>
+<text x="-5.08" y="5.842" size="1.778" layer="95">&gt;NAME</text>
+<text x="-5.08" y="-7.366" size="1.778" layer="96">&gt;VALUE</text>
+<pin name="2" x="5.08" y="0" length="short" direction="pas" rot="R180"/>
+<pin name="1" x="5.08" y="2.54" length="short" direction="pas" rot="R180"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -2920,6 +2928,22 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <device name="M2" package="M2MOUNT">
 <connects>
 <connect gate="G$1" pin="1" pad="P$1"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="XT90">
+<gates>
+<gate name="G$1" symbol="CON02" x="0" y="0"/>
+</gates>
+<devices>
+<device name="PW-M" package="XT90PW-M">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -3517,7 +3541,7 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <part name="U$4" library="power_dist" deviceset="MOUNT" device="" value="MOUNT">
 <attribute name="POPULATE" value="0"/>
 </part>
-<part name="P7" library="precharge" deviceset="XT90" device="PW-M">
+<part name="P7" library="power_dist" deviceset="XT90" device="PW-M">
 <attribute name="POPULATE" value="0"/>
 </part>
 <part name="P1" library="precharge" deviceset="XT30" device="P">

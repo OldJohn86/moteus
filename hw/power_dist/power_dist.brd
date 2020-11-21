@@ -629,23 +629,6 @@ r4.0</text>
 </library>
 <library name="precharge">
 <packages>
-<package name="XT90PW-M">
-<pad name="2" x="5.45" y="0" drill="3.6"/>
-<pad name="1" x="-5.45" y="0" drill="3.6"/>
-<pad name="S1" x="-9.45" y="9.4" drill="2"/>
-<pad name="S2" x="9.45" y="9.4" drill="2"/>
-<wire x1="-10.4" y1="-4" x2="-10.4" y2="23" width="0.127" layer="21"/>
-<wire x1="-10.4" y1="23" x2="10.4" y2="23" width="0.127" layer="21"/>
-<wire x1="10.4" y1="23" x2="10.4" y2="-4" width="0.127" layer="21"/>
-<wire x1="10.4" y1="-4" x2="-10.4" y2="-4" width="0.127" layer="21"/>
-<text x="-10.1" y="-6.1" size="1.27" layer="21" font="vector">&gt;NAME</text>
-<polygon width="0.127" layer="39">
-<vertex x="-10.4" y="-4"/>
-<vertex x="-10.4" y="23"/>
-<vertex x="10.4" y="23"/>
-<vertex x="10.4" y="-4"/>
-</polygon>
-</package>
 <package name="XT30P">
 <pad name="1" x="-2.5" y="0" drill="2"/>
 <pad name="2" x="2.5" y="0" drill="2"/>
@@ -1250,6 +1233,37 @@ r4.0</text>
 <vertex x="2.4" y="0" curve="-90"/>
 <vertex x="0" y="-2.4" curve="-90"/>
 </polygon>
+<polygon width="0.127" layer="1">
+<vertex x="-2.4" y="0" curve="-90"/>
+<vertex x="0" y="2.4" curve="-90"/>
+<vertex x="2.4" y="0" curve="-90"/>
+<vertex x="0" y="-2.4" curve="-90"/>
+</polygon>
+<polygon width="0.127" layer="16">
+<vertex x="-2.4" y="0" curve="-90"/>
+<vertex x="0" y="2.4" curve="-90"/>
+<vertex x="2.4" y="0" curve="-90"/>
+<vertex x="0" y="-2.4" curve="-90"/>
+</polygon>
+</package>
+<package name="XT90PW-M">
+<pad name="2" x="5.45" y="0" drill="3.6"/>
+<pad name="1" x="-5.45" y="0" drill="3.6"/>
+<pad name="S1" x="-9.45" y="9.4" drill="2"/>
+<pad name="S2" x="9.45" y="9.4" drill="2"/>
+<wire x1="-10.4" y1="1" x2="-10.4" y2="23" width="0.127" layer="21"/>
+<wire x1="-10.4" y1="23" x2="10.4" y2="23" width="0.127" layer="21"/>
+<wire x1="10.4" y1="23" x2="10.4" y2="1.1" width="0.127" layer="21"/>
+<text x="-10.1" y="-6.1" size="1.27" layer="21" font="vector">&gt;NAME</text>
+<polygon width="0.127" layer="39">
+<vertex x="-10.4" y="-4"/>
+<vertex x="-10.4" y="23"/>
+<vertex x="10.4" y="23"/>
+<vertex x="10.4" y="-4"/>
+</polygon>
+<wire x1="8.4" y1="-3" x2="-8.4" y2="-3" width="0.127" layer="21"/>
+<wire x1="10.4" y1="1.1" x2="8.4" y2="-3" width="0.127" layer="21"/>
+<wire x1="-10.4" y1="1" x2="-8.4" y2="-3" width="0.127" layer="21"/>
 </package>
 </packages>
 </library>
@@ -1516,7 +1530,7 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <element name="U$4" library="power_dist" package="M2.5MOUNT" value="MOUNT" x="77" y="3" smashed="yes">
 <attribute name="POPULATE" value="0" x="117.64" y="-19.86" size="1.778" layer="27" display="off"/>
 </element>
-<element name="P7" library="precharge" package="XT90PW-M" value="XT90PW-M" x="23.4" y="32.8" smashed="yes" rot="R90">
+<element name="P7" library="power_dist" package="XT90PW-M" value="XT90PW-M" x="23.4" y="32.8" smashed="yes" rot="R90">
 <attribute name="POPULATE" value="0" x="23.4" y="32.8" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="P1" library="precharge" package="XT30P" value="XT30P" x="68" y="37" smashed="yes" rot="R90">
@@ -3078,22 +3092,22 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <mfgpreviewcolor name="substratecolor" color="0xFF786E46"/>
 </mfgpreviewcolors>
 <errors>
-<approved hash="19,1,9b4b67b85e83dc3a"/>
+<approved hash="5,1,7d21ffb19ca152ce"/>
+<approved hash="5,1,68ddf37c8bb33ceb"/>
+<approved hash="19,1,9d2a82c9c1f33c24"/>
 <approved hash="19,1,86c7d99a32a1ca12"/>
 <approved hash="19,1,d4040845988d3f07"/>
 <approved hash="19,1,c68db61c51c080f1"/>
 <approved hash="19,1,a7a2a020c1133922"/>
 <approved hash="19,1,f8d648cefc9b3748"/>
-<approved hash="5,1,68ddf37c8bb33ceb"/>
-<approved hash="5,1,7d21ffb19ca152ce"/>
-<approved hash="19,1,9d2a82c9c1f33c24"/>
 <approved hash="19,1,56c82d97090c51d9"/>
-<approved hash="19,1,67fe641d041d07fe"/>
-<approved hash="19,1,fff1fc0c1c0c1ff1"/>
-<approved hash="19,1,0ff00c111c111ff0"/>
+<approved hash="19,1,9b4b67b85e83dc3a"/>
 <approved hash="19,1,61be651d051d01be"/>
 <approved hash="19,1,09b00d111d1119b0"/>
 <approved hash="19,1,f9b1fd0c1d0c19b1"/>
+<approved hash="19,1,67fe641d041d07fe"/>
+<approved hash="19,1,fff1fc0c1c0c1ff1"/>
+<approved hash="19,1,0ff00c111c111ff0"/>
 </errors>
 </board>
 </drawing>

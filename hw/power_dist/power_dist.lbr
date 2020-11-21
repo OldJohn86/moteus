@@ -236,6 +236,18 @@
 <vertex x="2.4" y="0" curve="-90"/>
 <vertex x="0" y="-2.4" curve="-90"/>
 </polygon>
+<polygon width="0.127" layer="1">
+<vertex x="-2.4" y="0" curve="-90"/>
+<vertex x="0" y="2.4" curve="-90"/>
+<vertex x="2.4" y="0" curve="-90"/>
+<vertex x="0" y="-2.4" curve="-90"/>
+</polygon>
+<polygon width="0.127" layer="16">
+<vertex x="-2.4" y="0" curve="-90"/>
+<vertex x="0" y="2.4" curve="-90"/>
+<vertex x="2.4" y="0" curve="-90"/>
+<vertex x="0" y="-2.4" curve="-90"/>
+</polygon>
 </package>
 <package name="M2MOUNT">
 <pad name="P$1" x="0" y="0" drill="2.1"/>
@@ -277,10 +289,9 @@
 <pad name="1" x="-5.45" y="0" drill="3.6"/>
 <pad name="S1" x="-9.45" y="9.4" drill="2"/>
 <pad name="S2" x="9.45" y="9.4" drill="2"/>
-<wire x1="-10.4" y1="-4" x2="-10.4" y2="23" width="0.127" layer="21"/>
+<wire x1="-10.4" y1="1" x2="-10.4" y2="23" width="0.127" layer="21"/>
 <wire x1="-10.4" y1="23" x2="10.4" y2="23" width="0.127" layer="21"/>
-<wire x1="10.4" y1="23" x2="10.4" y2="-4" width="0.127" layer="21"/>
-<wire x1="10.4" y1="-4" x2="-10.4" y2="-4" width="0.127" layer="21"/>
+<wire x1="10.4" y1="23" x2="10.4" y2="1.1" width="0.127" layer="21"/>
 <text x="-10.1" y="-6.1" size="1.27" layer="21" font="vector">&gt;NAME</text>
 <polygon width="0.127" layer="39">
 <vertex x="-10.4" y="-4"/>
@@ -288,6 +299,9 @@
 <vertex x="10.4" y="23"/>
 <vertex x="10.4" y="-4"/>
 </polygon>
+<wire x1="8.4" y1="-3" x2="-8.4" y2="-3" width="0.127" layer="21"/>
+<wire x1="10.4" y1="1.1" x2="8.4" y2="-3" width="0.127" layer="21"/>
+<wire x1="-10.4" y1="1" x2="-8.4" y2="-3" width="0.127" layer="21"/>
 </package>
 <package name="8TDFN">
 <smd name="6" x="0.25" y="0.95" dx="0.3" dy="0.85" layer="1"/>
