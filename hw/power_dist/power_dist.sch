@@ -3108,6 +3108,32 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <vertex x="-0.254" y="-0.508"/>
 </polygon>
 </symbol>
+<symbol name="NPN_BJT">
+<description>&lt;b&gt;Description:&lt;/b&gt; Symbol for BJT NPN Transistors.&lt;br/&gt;</description>
+<pin name="BASE" x="-7.62" y="0" visible="off" length="short"/>
+<pin name="COLLECTOR" x="2.54" y="7.62" visible="off" length="short" rot="R270"/>
+<pin name="EMITTER" x="2.54" y="-7.62" visible="off" length="short" rot="R90"/>
+<circle x="0" y="0" radius="3.81845625" width="0.1524" layer="94"/>
+<wire x1="-1.27" y1="2.54" x2="-1.27" y2="0.508" width="0.1524" layer="94"/>
+<wire x1="-1.27" y1="0.508" x2="-1.27" y2="0" width="0.1524" layer="94"/>
+<wire x1="-1.27" y1="0" x2="-1.27" y2="-0.508" width="0.1524" layer="94"/>
+<wire x1="-1.27" y1="-0.508" x2="-1.27" y2="-2.54" width="0.1524" layer="94"/>
+<wire x1="-5.08" y1="0" x2="-1.27" y2="0" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="5.08" x2="2.54" y2="2.032" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="2.032" x2="-1.27" y2="0.508" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="-5.08" x2="2.54" y2="-2.032" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="-2.032" x2="-1.27" y2="-0.508" width="0.1524" layer="94"/>
+<polygon width="0.1524" layer="94">
+<vertex x="2.54" y="-2.032"/>
+<vertex x="1.905" y="-1.27"/>
+<vertex x="1.524" y="-2.159"/>
+</polygon>
+<text x="-5.08" y="0.254" size="1.016" layer="94" font="vector">B</text>
+<text x="2.794" y="3.81" size="1.016" layer="94" font="vector">C</text>
+<text x="2.794" y="-4.826" size="1.016" layer="94" font="vector">E</text>
+<text x="5.08" y="5.08" size="1.016" layer="95" font="vector" rot="R180" align="bottom-right">&gt;NAME</text>
+<text x="5.08" y="2.54" size="1.016" layer="96" font="vector">&gt;VALUE</text>
+</symbol>
 </symbols>
 <devicesets>
 <deviceset name="DIODES" prefix="D">
@@ -3240,6 +3266,37 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <attribute name="MPN" value="" constant="no"/>
 <attribute name="POPULATE" value="1" constant="no"/>
 <attribute name="URL" value="" constant="no"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="NPN_BJT" prefix="U" uservalue="yes">
+<description>&lt;b&gt;Library:&lt;/b&gt;  MF_Discrete_Semiconductor&lt;br/&gt;
+&lt;b&gt;Description:&lt;/b&gt; Device for Single NPN BJT Transistors. Manufacture part number (MFG#) can be added via Attributes.&lt;br/&gt;</description>
+<gates>
+<gate name="G$1" symbol="NPN_BJT" x="0" y="0"/>
+</gates>
+<devices>
+<device name="_SOT-23-3" package="SOT-23-3">
+<connects>
+<connect gate="G$1" pin="BASE" pad="P$1"/>
+<connect gate="G$1" pin="COLLECTOR" pad="P$3"/>
+<connect gate="G$1" pin="EMITTER" pad="P$2"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="HOUSEPART" value="NO" constant="no"/>
+<attribute name="MPN" value="" constant="no"/>
+<attribute name="POPULATE" value="1" constant="no"/>
+<attribute name="URL" value="" constant="no"/>
+</technology>
+<technology name="MMBT3904">
+<attribute name="HOUSEPART" value="YES" constant="no"/>
+<attribute name="MPN" value="MF-DSC-SOT233-MMBT3904" constant="no"/>
+<attribute name="POPULATE" value="1" constant="no"/>
+<attribute name="URL" value="https://factory.macrofab.com/part/MF-DSC-SOT233-MMBT3904" constant="no"/>
+<attribute name="VALUE" value="MF-DSC-SOT233-MMBT3904" constant="no"/>
 </technology>
 </technologies>
 </device>
@@ -3693,6 +3750,8 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <attribute name="MPN" value="MF-RES-0603-220"/>
 </part>
 <part name="P+13" library="supply1" deviceset="VCC" device=""/>
+<part name="Q6" library="mfdiscretesemi" deviceset="NPN_BJT" device="_SOT-23-3" technology="MMBT3904" value="MF-DSC-SOT233-MMBT3904"/>
+<part name="GND25" library="supply1" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -4171,6 +4230,13 @@ Lower OVLO: 54.87</text>
 <instance part="P+13" gate="VCC" x="208.28" y="-15.24" smashed="yes">
 <attribute name="VALUE" x="205.74" y="-17.78" size="1.778" layer="96" rot="R90"/>
 </instance>
+<instance part="Q6" gate="G$1" x="63.5" y="-76.2" smashed="yes">
+<attribute name="NAME" x="68.58" y="-71.12" size="1.016" layer="95" font="vector" rot="R180" align="bottom-right"/>
+<attribute name="VALUE" x="68.58" y="-73.66" size="1.016" layer="96" font="vector"/>
+</instance>
+<instance part="GND25" gate="1" x="66.04" y="-88.9" smashed="yes">
+<attribute name="VALUE" x="63.5" y="-91.44" size="1.778" layer="96"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -4394,6 +4460,11 @@ Lower OVLO: 54.87</text>
 <wire x1="271.78" y1="-53.34" x2="269.24" y2="-53.34" width="0.1524" layer="91"/>
 <pinref part="GND24" gate="1" pin="GND"/>
 <wire x1="269.24" y1="-53.34" x2="269.24" y2="-55.88" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="Q6" gate="G$1" pin="EMITTER"/>
+<pinref part="GND25" gate="1" pin="GND"/>
+<wire x1="66.04" y1="-83.82" x2="66.04" y2="-86.36" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="VCC" class="1">
@@ -4634,9 +4705,9 @@ Lower OVLO: 54.87</text>
 <label x="431.8" y="10.16" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="U2" gate="G$1" pin="PB14"/>
-<wire x1="492.76" y1="129.54" x2="525.78" y2="129.54" width="0.1524" layer="91"/>
-<label x="515.62" y="129.54" size="1.778" layer="95"/>
+<pinref part="U2" gate="G$1" pin="PA15"/>
+<wire x1="482.6" y1="175.26" x2="482.6" y2="190.5" width="0.1524" layer="91"/>
+<label x="482.6" y="182.88" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="PWR_SW" class="0">
@@ -4646,9 +4717,9 @@ Lower OVLO: 54.87</text>
 <pinref part="J2" gate="A" pin="3"/>
 </segment>
 <segment>
-<pinref part="U2" gate="G$1" pin="PA3"/>
-<wire x1="447.04" y1="127" x2="421.64" y2="127" width="0.1524" layer="91"/>
-<label x="421.64" y="127" size="1.778" layer="95" font="vector"/>
+<pinref part="U2" gate="G$1" pin="PB7"/>
+<wire x1="464.82" y1="175.26" x2="464.82" y2="193.04" width="0.1524" layer="91"/>
+<label x="464.82" y="180.34" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="N$2" class="0">
@@ -4666,9 +4737,9 @@ Lower OVLO: 54.87</text>
 <pinref part="J2" gate="A" pin="2"/>
 </segment>
 <segment>
-<pinref part="U2" gate="G$1" pin="PA2"/>
-<wire x1="447.04" y1="129.54" x2="421.64" y2="129.54" width="0.1524" layer="91"/>
-<label x="421.64" y="129.54" size="1.778" layer="95" font="vector"/>
+<pinref part="U2" gate="G$1" pin="PB9"/>
+<wire x1="459.74" y1="175.26" x2="459.74" y2="193.04" width="0.1524" layer="91"/>
+<label x="459.74" y="180.34" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="+24V" class="0">
@@ -5074,6 +5145,22 @@ Lower OVLO: 54.87</text>
 <pinref part="R15" gate="G$1" pin="P$1"/>
 <pinref part="D5" gate="G$1" pin="ANODE"/>
 <wire x1="208.28" y1="-30.48" x2="208.28" y2="-33.02" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$3" class="0">
+<segment>
+<pinref part="U3" gate="A" pin="DIODE"/>
+<wire x1="40.64" y1="-53.34" x2="48.26" y2="-53.34" width="0.1524" layer="91"/>
+<wire x1="48.26" y1="-53.34" x2="48.26" y2="-55.88" width="0.1524" layer="91"/>
+<wire x1="48.26" y1="-55.88" x2="58.42" y2="-55.88" width="0.1524" layer="91"/>
+<wire x1="58.42" y1="-55.88" x2="58.42" y2="-66.04" width="0.1524" layer="91"/>
+<wire x1="58.42" y1="-66.04" x2="66.04" y2="-66.04" width="0.1524" layer="91"/>
+<pinref part="Q6" gate="G$1" pin="COLLECTOR"/>
+<wire x1="66.04" y1="-66.04" x2="66.04" y2="-68.58" width="0.1524" layer="91"/>
+<wire x1="58.42" y1="-66.04" x2="55.88" y2="-66.04" width="0.1524" layer="91"/>
+<junction x="58.42" y="-66.04"/>
+<pinref part="Q6" gate="G$1" pin="BASE"/>
+<wire x1="55.88" y1="-66.04" x2="55.88" y2="-76.2" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
