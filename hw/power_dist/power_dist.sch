@@ -4805,7 +4805,7 @@ Lower OVLO: 54.87</text>
 <wire x1="220.98" y1="132.08" x2="231.14" y2="132.08" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$3" class="0">
+<net name="VIN_POST" class="0">
 <segment>
 <wire x1="-33.02" y1="27.94" x2="-27.94" y2="27.94" width="0.1524" layer="91"/>
 <wire x1="-27.94" y1="27.94" x2="-25.4" y2="27.94" width="0.1524" layer="91"/>
