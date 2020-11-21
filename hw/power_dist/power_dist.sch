@@ -553,24 +553,6 @@
 <wire x1="-4.2" y1="-2.6" x2="-5.1" y2="-1.7" width="0.127" layer="25"/>
 <wire x1="-5.1" y1="1.7" x2="-5.1" y2="-1.7" width="0.127" layer="25"/>
 </package>
-<package name="M2.5MOUNT">
-<pad name="P$1" x="0" y="0" drill="2.6"/>
-<polygon width="0.127" layer="39">
-<vertex x="-2.5" y="0" curve="-90"/>
-<vertex x="0" y="2.5" curve="-90"/>
-<vertex x="2.5" y="0" curve="-90"/>
-<vertex x="0" y="-2.5" curve="-90"/>
-</polygon>
-</package>
-<package name="M2MOUNT">
-<pad name="P$1" x="0" y="0" drill="2.1"/>
-<polygon width="0.127" layer="39">
-<vertex x="-2" y="0" curve="-90"/>
-<vertex x="0" y="2" curve="-90"/>
-<vertex x="2" y="0" curve="-90"/>
-<vertex x="0" y="-2" curve="-90"/>
-</polygon>
-</package>
 <package name="QFN50P700X700X60-49N">
 <description>&lt;b&gt;UFQFPN48 - 48-lead, 7x7 mm, 0.5 mm pitch, ultra thin fine pitch quad flat package outline&lt;/b&gt;&lt;br&gt;
 </description>
@@ -837,15 +819,6 @@
 <pin name="2" x="5.08" y="0" length="short" direction="pas" rot="R180"/>
 <pin name="1" x="5.08" y="2.54" length="short" direction="pas" rot="R180"/>
 </symbol>
-<symbol name="MOUNT">
-<wire x1="-2.54" y1="2.54" x2="2.54" y2="2.54" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-2.54" x2="-2.54" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="-2.54" y1="-2.54" x2="-2.54" y2="2.54" width="0.254" layer="94"/>
-<wire x1="-2.54" y1="2.54" x2="2.54" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-2.54" x2="2.54" y2="2.54" width="0.254" layer="94"/>
-<wire x1="2.54" y1="2.54" x2="-2.54" y2="-2.54" width="0.254" layer="94"/>
-<text x="-2.54" y="5.08" size="1.27" layer="94">&gt;NAME</text>
-</symbol>
 <symbol name="STM32G474CEU6">
 <wire x1="5.08" y1="17.78" x2="40.64" y2="17.78" width="0.254" layer="94"/>
 <wire x1="40.64" y1="-40.64" x2="40.64" y2="17.78" width="0.254" layer="94"/>
@@ -989,23 +962,6 @@
 <connect gate="G$1" pin="1" pad="1"/>
 <connect gate="G$1" pin="2" pad="2"/>
 </connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="MOUNT">
-<gates>
-<gate name="G$1" symbol="MOUNT" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="M2.5MOUNT">
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="M2" package="M2MOUNT">
 <technologies>
 <technology name=""/>
 </technologies>
@@ -2330,6 +2286,30 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <smd name="P2" x="6.4" y="-0.29" dx="1.6" dy="3" layer="1"/>
 <smd name="5" x="4" y="-2.54" dx="1" dy="5.5" layer="1"/>
 </package>
+<package name="M2.5MOUNT">
+<pad name="P$1" x="0" y="0" drill="2.6"/>
+<polygon width="0.127" layer="39">
+<vertex x="-2.5" y="0" curve="-90"/>
+<vertex x="0" y="2.5" curve="-90"/>
+<vertex x="2.5" y="0" curve="-90"/>
+<vertex x="0" y="-2.5" curve="-90"/>
+</polygon>
+<polygon width="0.127" layer="29">
+<vertex x="-2.4" y="0" curve="-90"/>
+<vertex x="0" y="2.4" curve="-90"/>
+<vertex x="2.4" y="0" curve="-90"/>
+<vertex x="0" y="-2.4" curve="-90"/>
+</polygon>
+</package>
+<package name="M2MOUNT">
+<pad name="P$1" x="0" y="0" drill="2.1"/>
+<polygon width="0.127" layer="39">
+<vertex x="-2" y="0" curve="-90"/>
+<vertex x="0" y="2" curve="-90"/>
+<vertex x="2" y="0" curve="-90"/>
+<vertex x="0" y="-2" curve="-90"/>
+</polygon>
+</package>
 </packages>
 <symbols>
 <symbol name="MAX15062AATA+T">
@@ -2499,6 +2479,16 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <pin name="1" x="5.08" y="5.08" length="short" direction="pas" rot="R180"/>
 <pin name="4" x="5.08" y="-2.54" visible="pad" length="short" direction="pas" rot="R180"/>
 <pin name="5" x="5.08" y="-5.08" length="short" direction="pas" rot="R180"/>
+</symbol>
+<symbol name="MOUNT">
+<wire x1="-2.54" y1="2.54" x2="2.54" y2="2.54" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-2.54" x2="-2.54" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="-2.54" y1="-2.54" x2="-2.54" y2="2.54" width="0.254" layer="94"/>
+<wire x1="-2.54" y1="2.54" x2="2.54" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-2.54" x2="2.54" y2="2.54" width="0.254" layer="94"/>
+<wire x1="2.54" y1="2.54" x2="-2.54" y2="-2.54" width="0.254" layer="94"/>
+<text x="-2.54" y="5.08" size="1.27" layer="94">&gt;NAME</text>
+<pin name="1" x="0" y="-5.08" length="middle" direction="pas" rot="R90"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -2907,6 +2897,29 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <connect gate="A" pin="3" pad="3"/>
 <connect gate="A" pin="4" pad="4"/>
 <connect gate="A" pin="5" pad="5"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="MOUNT">
+<gates>
+<gate name="G$1" symbol="MOUNT" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="M2.5MOUNT">
+<connects>
+<connect gate="G$1" pin="1" pad="P$1"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="M2" package="M2MOUNT">
+<connects>
+<connect gate="G$1" pin="1" pad="P$1"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -3492,16 +3505,16 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 </classes>
 <parts>
 <part name="GND8" library="supply1" deviceset="GND" device=""/>
-<part name="U$1" library="precharge" deviceset="MOUNT" device="" value="MOUNT">
+<part name="U$1" library="power_dist" deviceset="MOUNT" device="" value="MOUNT">
 <attribute name="POPULATE" value="0"/>
 </part>
-<part name="U$2" library="precharge" deviceset="MOUNT" device="" value="MOUNT">
+<part name="U$2" library="power_dist" deviceset="MOUNT" device="" value="MOUNT">
 <attribute name="POPULATE" value="0"/>
 </part>
-<part name="U$3" library="precharge" deviceset="MOUNT" device="" value="MOUNT">
+<part name="U$3" library="power_dist" deviceset="MOUNT" device="" value="MOUNT">
 <attribute name="POPULATE" value="0"/>
 </part>
-<part name="U$4" library="precharge" deviceset="MOUNT" device="" value="MOUNT">
+<part name="U$4" library="power_dist" deviceset="MOUNT" device="" value="MOUNT">
 <attribute name="POPULATE" value="0"/>
 </part>
 <part name="P7" library="precharge" deviceset="XT90" device="PW-M">
@@ -3752,6 +3765,12 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <part name="P+13" library="supply1" deviceset="VCC" device=""/>
 <part name="Q6" library="mfdiscretesemi" deviceset="NPN_BJT" device="_SOT-23-3" technology="MMBT3904" value="MF-DSC-SOT233-MMBT3904"/>
 <part name="GND25" library="supply1" deviceset="GND" device=""/>
+<part name="C17" library="mfpassives" deviceset="CAPACITOR_NP" device="_0603" value="DNP">
+<attribute name="HOUSEPART" value="1"/>
+<attribute name="MPN" value="MF-CAP-0603-1uF"/>
+</part>
+<part name="GND26" library="supply1" deviceset="GND" device=""/>
+<part name="R16" library="mfpassives" deviceset="RESISTOR" device="_0603" value="DNP"/>
 </parts>
 <sheets>
 <sheet>
@@ -4237,6 +4256,17 @@ Lower OVLO: 54.87</text>
 <instance part="GND25" gate="1" x="66.04" y="-88.9" smashed="yes">
 <attribute name="VALUE" x="63.5" y="-91.44" size="1.778" layer="96"/>
 </instance>
+<instance part="C17" gate="G$1" x="0" y="162.56" smashed="yes">
+<attribute name="NAME" x="2.54" y="164.084" size="1.016" layer="95" font="vector" align="top-left"/>
+<attribute name="VALUE" x="2.54" y="161.036" size="1.016" layer="96" font="vector"/>
+</instance>
+<instance part="GND26" gate="1" x="0" y="152.4" smashed="yes">
+<attribute name="VALUE" x="-2.54" y="149.86" size="1.778" layer="96"/>
+</instance>
+<instance part="R16" gate="G$1" x="7.62" y="162.56" smashed="yes">
+<attribute name="NAME" x="10.16" y="164.084" size="1.016" layer="95" font="vector" align="top-left"/>
+<attribute name="VALUE" x="10.16" y="161.036" size="1.016" layer="96" font="vector"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -4465,6 +4495,15 @@ Lower OVLO: 54.87</text>
 <pinref part="Q6" gate="G$1" pin="EMITTER"/>
 <pinref part="GND25" gate="1" pin="GND"/>
 <wire x1="66.04" y1="-83.82" x2="66.04" y2="-86.36" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="GND26" gate="1" pin="GND"/>
+<pinref part="C17" gate="G$1" pin="P$2"/>
+<wire x1="0" y1="154.94" x2="0" y2="160.02" width="0.1524" layer="91"/>
+<pinref part="R16" gate="G$1" pin="P$2"/>
+<wire x1="7.62" y1="157.48" x2="7.62" y2="154.94" width="0.1524" layer="91"/>
+<wire x1="7.62" y1="154.94" x2="0" y2="154.94" width="0.1524" layer="91"/>
+<junction x="0" y="154.94"/>
 </segment>
 </net>
 <net name="VCC" class="1">
@@ -5161,6 +5200,18 @@ Lower OVLO: 54.87</text>
 <junction x="58.42" y="-66.04"/>
 <pinref part="Q6" gate="G$1" pin="BASE"/>
 <wire x1="55.88" y1="-66.04" x2="55.88" y2="-76.2" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$15" class="0">
+<segment>
+<pinref part="U$3" gate="G$1" pin="1"/>
+<wire x1="0" y1="172.72" x2="0" y2="170.18" width="0.1524" layer="91"/>
+<pinref part="C17" gate="G$1" pin="P$1"/>
+<pinref part="R16" gate="G$1" pin="P$1"/>
+<wire x1="0" y1="170.18" x2="0" y2="165.1" width="0.1524" layer="91"/>
+<wire x1="7.62" y1="167.64" x2="7.62" y2="170.18" width="0.1524" layer="91"/>
+<wire x1="7.62" y1="170.18" x2="0" y2="170.18" width="0.1524" layer="91"/>
+<junction x="0" y="170.18"/>
 </segment>
 </net>
 </nets>
