@@ -4486,6 +4486,7 @@ Lower OVLO: 54.87</text>
 <wire x1="226.06" y1="114.3" x2="274.32" y2="114.3" width="0.1524" layer="91"/>
 <pinref part="C3" gate="G$1" pin="P$2"/>
 <wire x1="274.32" y1="114.3" x2="274.32" y2="124.46" width="0.1524" layer="91"/>
+<junction x="226.06" y="114.3"/>
 </segment>
 <segment>
 <pinref part="C2" gate="G$1" pin="P$2"/>
@@ -5031,6 +5032,7 @@ Lower OVLO: 54.87</text>
 <wire x1="101.6" y1="5.08" x2="101.6" y2="27.94" width="0.1524" layer="91"/>
 <wire x1="101.6" y1="27.94" x2="99.06" y2="27.94" width="0.1524" layer="91"/>
 <junction x="101.6" y="27.94"/>
+<junction x="-2.54" y="-2.54"/>
 </segment>
 <segment>
 <pinref part="P6" gate="G$1" pin="2"/>
@@ -5320,6 +5322,25 @@ Lower OVLO: 54.87</text>
 </nets>
 </sheet>
 </sheets>
+<errors>
+<approved hash="101,1,-27.94,172.72,U$1,1,,,,"/>
+<approved hash="101,1,-12.7,172.72,U$2,1,,,,"/>
+<approved hash="101,1,15.24,172.72,U$4,1,,,,"/>
+<approved hash="104,1,175.26,127,U1,VCC,N$4,,,"/>
+<approved hash="202,1,220.98,124.46,U1,MODE,,,,"/>
+<approved hash="104,1,-25.4,-40.64,U3,AGND,GND,,,"/>
+<approved hash="202,1,40.64,-50.8,U3,VAUX,,,,"/>
+<approved hash="104,1,40.64,-40.64,U3,VDD,N$6,,,"/>
+<approved hash="202,1,40.64,-33.02,U3,!RETRY,,,,"/>
+<approved hash="104,1,40.64,-27.94,U3,PWR,N$10,,,"/>
+<approved hash="204,1,40.64,-22.86,U3,PGD,,,,"/>
+<approved hash="104,1,200.66,-33.02,D4,ANODE,N$8,,,"/>
+<approved hash="104,1,200.66,-38.1,D4,CATHODE,LED1,,,"/>
+<approved hash="104,1,208.28,-33.02,D5,ANODE,N$14,,,"/>
+<approved hash="104,1,208.28,-38.1,D5,CATHODE,LED2,,,"/>
+<approved hash="113,1,201.189,-35.56,D4,,,,,"/>
+<approved hash="113,1,208.809,-35.56,D5,,,,,"/>
+</errors>
 </schematic>
 </drawing>
 <compatibility>
