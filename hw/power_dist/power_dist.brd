@@ -154,418 +154,418 @@
 <wire x1="80" y1="47.5" x2="77.5" y2="50" width="0" layer="20" curve="90"/>
 <wire x1="77.5" y1="50" x2="2.5" y2="50" width="0" layer="20"/>
 <wire x1="2.5" y1="50" x2="0" y2="47.5" width="0" layer="20" curve="90"/>
-<text x="94" y="16.2" size="1" layer="21" font="vector" align="top-left">power 
+<text x="25.6" y="42.6" size="1" layer="21" font="vector" align="top-left">power 
 dist r4.0</text>
-<text x="94" y="12.8" size="0.8" layer="21" font="vector" ratio="10" align="top-left">(c) 2020</text>
+<text x="28" y="44.6" size="0.8" layer="21" font="vector" ratio="10" align="top-left">(c) 2020</text>
 <polygon width="0.05" layer="25">
-<vertex x="93.32" y="18.91"/>
-<vertex x="93.41" y="19"/>
-<vertex x="93.35" y="19.16"/>
-<vertex x="93.28" y="19.32"/>
-<vertex x="93.19" y="19.46"/>
-<vertex x="93.09" y="19.6"/>
-<vertex x="92.96" y="19.69"/>
-<vertex x="92.42" y="19.5"/>
-<vertex x="92.33" y="19.6"/>
-<vertex x="92.24" y="19.69"/>
-<vertex x="92.18" y="19.74"/>
-<vertex x="92.29" y="20.36"/>
-<vertex x="92.14" y="20.45"/>
-<vertex x="91.92" y="20.58"/>
-<vertex x="91.74" y="20.67"/>
-<vertex x="91.6" y="20.73"/>
-<vertex x="91.18" y="20.27"/>
-<vertex x="90.98" y="20.34"/>
-<vertex x="90.82" y="20.38"/>
-<vertex x="90.67" y="20.95"/>
-<vertex x="90.28" y="20.96"/>
-<vertex x="89.84" y="20.93"/>
-<vertex x="89.74" y="20.32"/>
-<vertex x="89.8" y="19.89"/>
-<vertex x="90.14" y="19.93"/>
-<vertex x="90.54" y="19.95"/>
-<vertex x="90.74" y="19.93"/>
-<vertex x="90.92" y="19.89"/>
-<vertex x="91.17" y="19.82"/>
-<vertex x="91.47" y="19.69"/>
-<vertex x="91.72" y="19.54"/>
-<vertex x="91.92" y="19.37"/>
-<vertex x="92.06" y="19.23"/>
-<vertex x="92.24" y="19.04"/>
-<vertex x="92.32" y="18.91"/>
+<vertex x="27.12" y="47.31"/>
+<vertex x="27.21" y="47.4"/>
+<vertex x="27.15" y="47.56"/>
+<vertex x="27.08" y="47.72"/>
+<vertex x="26.99" y="47.86"/>
+<vertex x="26.89" y="48"/>
+<vertex x="26.76" y="48.09"/>
+<vertex x="26.22" y="47.9"/>
+<vertex x="26.13" y="48"/>
+<vertex x="26.04" y="48.09"/>
+<vertex x="25.98" y="48.14"/>
+<vertex x="26.09" y="48.76"/>
+<vertex x="25.94" y="48.85"/>
+<vertex x="25.72" y="48.98"/>
+<vertex x="25.54" y="49.07"/>
+<vertex x="25.4" y="49.13"/>
+<vertex x="24.98" y="48.67"/>
+<vertex x="24.78" y="48.74"/>
+<vertex x="24.62" y="48.78"/>
+<vertex x="24.47" y="49.35"/>
+<vertex x="24.08" y="49.36"/>
+<vertex x="23.64" y="49.33"/>
+<vertex x="23.54" y="48.72"/>
+<vertex x="23.6" y="48.29"/>
+<vertex x="23.94" y="48.33"/>
+<vertex x="24.34" y="48.35"/>
+<vertex x="24.54" y="48.33"/>
+<vertex x="24.72" y="48.29"/>
+<vertex x="24.97" y="48.22"/>
+<vertex x="25.27" y="48.09"/>
+<vertex x="25.52" y="47.94"/>
+<vertex x="25.72" y="47.77"/>
+<vertex x="25.86" y="47.63"/>
+<vertex x="26.04" y="47.44"/>
+<vertex x="26.12" y="47.31"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="89.8" y="19.89"/>
-<vertex x="89.74" y="20.33"/>
-<vertex x="89.56" y="20.28"/>
-<vertex x="89.37" y="20.21"/>
-<vertex x="88.95" y="20.64"/>
-<vertex x="88.72" y="20.52"/>
-<vertex x="88.47" y="20.37"/>
-<vertex x="88.26" y="20.22"/>
-<vertex x="88.45" y="19.63"/>
-<vertex x="88.35" y="19.55"/>
-<vertex x="88.2" y="19.37"/>
-<vertex x="87.6" y="19.51"/>
-<vertex x="87.45" y="19.27"/>
-<vertex x="87.32" y="19.05"/>
-<vertex x="87.23" y="18.81"/>
-<vertex x="87.68" y="18.4"/>
-<vertex x="87.62" y="18.17"/>
-<vertex x="87.61" y="18.05"/>
-<vertex x="87.01" y="17.84"/>
-<vertex x="87" y="17.4"/>
-<vertex x="87.04" y="17.06"/>
-<vertex x="87.67" y="16.9"/>
-<vertex x="87.7" y="16.69"/>
-<vertex x="87.73" y="16.55"/>
-<vertex x="87.31" y="16.16"/>
-<vertex x="87.46" y="15.89"/>
-<vertex x="87.6" y="15.67"/>
-<vertex x="87.77" y="15.47"/>
-<vertex x="88.34" y="15.68"/>
-<vertex x="88.45" y="15.54"/>
-<vertex x="88.59" y="15.41"/>
-<vertex x="88.91" y="15.73"/>
-<vertex x="88.69" y="15.95"/>
-<vertex x="88.46" y="16.22"/>
-<vertex x="88.24" y="16.58"/>
-<vertex x="88.11" y="16.93"/>
-<vertex x="88.01" y="17.34"/>
-<vertex x="88.01" y="17.9"/>
-<vertex x="88.06" y="18.15"/>
-<vertex x="88.14" y="18.37"/>
-<vertex x="88.37" y="18.83"/>
-<vertex x="88.53" y="19.06"/>
-<vertex x="88.73" y="19.27"/>
-<vertex x="88.92" y="19.44"/>
-<vertex x="89.17" y="19.63"/>
-<vertex x="89.49" y="19.78"/>
+<vertex x="23.6" y="48.29"/>
+<vertex x="23.54" y="48.73"/>
+<vertex x="23.36" y="48.68"/>
+<vertex x="23.17" y="48.61"/>
+<vertex x="22.75" y="49.04"/>
+<vertex x="22.52" y="48.92"/>
+<vertex x="22.27" y="48.77"/>
+<vertex x="22.06" y="48.62"/>
+<vertex x="22.25" y="48.03"/>
+<vertex x="22.15" y="47.95"/>
+<vertex x="22" y="47.77"/>
+<vertex x="21.4" y="47.91"/>
+<vertex x="21.25" y="47.67"/>
+<vertex x="21.12" y="47.45"/>
+<vertex x="21.03" y="47.21"/>
+<vertex x="21.48" y="46.8"/>
+<vertex x="21.42" y="46.57"/>
+<vertex x="21.41" y="46.45"/>
+<vertex x="20.81" y="46.24"/>
+<vertex x="20.8" y="45.8"/>
+<vertex x="20.84" y="45.46"/>
+<vertex x="21.47" y="45.3"/>
+<vertex x="21.5" y="45.09"/>
+<vertex x="21.53" y="44.95"/>
+<vertex x="21.11" y="44.56"/>
+<vertex x="21.26" y="44.29"/>
+<vertex x="21.4" y="44.07"/>
+<vertex x="21.57" y="43.87"/>
+<vertex x="22.14" y="44.08"/>
+<vertex x="22.25" y="43.94"/>
+<vertex x="22.39" y="43.81"/>
+<vertex x="22.71" y="44.13"/>
+<vertex x="22.49" y="44.35"/>
+<vertex x="22.26" y="44.62"/>
+<vertex x="22.04" y="44.98"/>
+<vertex x="21.91" y="45.33"/>
+<vertex x="21.81" y="45.74"/>
+<vertex x="21.81" y="46.3"/>
+<vertex x="21.86" y="46.55"/>
+<vertex x="21.94" y="46.77"/>
+<vertex x="22.17" y="47.23"/>
+<vertex x="22.33" y="47.46"/>
+<vertex x="22.53" y="47.67"/>
+<vertex x="22.72" y="47.84"/>
+<vertex x="22.97" y="48.03"/>
+<vertex x="23.29" y="48.18"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="88.91" y="15.73"/>
-<vertex x="88.641825" y="14.657296875"/>
-<vertex x="88.871825" y="14.517296875"/>
-<vertex x="89.111825" y="14.387296875"/>
-<vertex x="89.381825" y="14.297296875"/>
-<vertex x="89.761825" y="14.757296875"/>
-<vertex x="90.021825" y="14.657296875"/>
-<vertex x="90.151825" y="14.617296875"/>
-<vertex x="90.301825" y="14.077296875"/>
-<vertex x="90.621825" y="14.067296875"/>
-<vertex x="90.961825" y="14.077296875"/>
-<vertex x="91.091825" y="14.097296875"/>
-<vertex x="91.191825" y="14.707296875"/>
-<vertex x="91.371825" y="14.757296875"/>
-<vertex x="91.611825" y="14.817296875"/>
-<vertex x="92.001825" y="14.377296875"/>
-<vertex x="92.211825" y="14.477296875"/>
-<vertex x="92.451825" y="14.617296875"/>
-<vertex x="92.671825" y="14.797296875"/>
-<vertex x="92.39434375" y="15.64434375"/>
-<vertex x="92.43" y="15.68"/>
-<vertex x="92.55" y="15.82"/>
-<vertex x="93.15" y="15.66"/>
-<vertex x="93.29" y="15.87"/>
-<vertex x="93.37" y="16.04"/>
-<vertex x="93.46" y="16.27"/>
-<vertex x="92.31" y="16.27"/>
-<vertex x="92.04" y="15.95"/>
-<vertex x="91.73" y="15.69"/>
-<vertex x="91.37" y="15.46"/>
-<vertex x="90.9" y="15.29"/>
-<vertex x="90.39" y="15.24"/>
-<vertex x="89.91" y="15.27"/>
-<vertex x="89.48" y="15.41"/>
-<vertex x="89.18" y="15.54"/>
+<vertex x="22.71" y="44.13"/>
+<vertex x="22.441825" y="43.057296875"/>
+<vertex x="22.671825" y="42.917296875"/>
+<vertex x="22.911825" y="42.787296875"/>
+<vertex x="23.181825" y="42.697296875"/>
+<vertex x="23.561825" y="43.157296875"/>
+<vertex x="23.821825" y="43.057296875"/>
+<vertex x="23.951825" y="43.017296875"/>
+<vertex x="24.101825" y="42.477296875"/>
+<vertex x="24.421825" y="42.467296875"/>
+<vertex x="24.761825" y="42.477296875"/>
+<vertex x="24.891825" y="42.497296875"/>
+<vertex x="24.991825" y="43.107296875"/>
+<vertex x="25.171825" y="43.157296875"/>
+<vertex x="25.411825" y="43.217296875"/>
+<vertex x="25.801825" y="42.777296875"/>
+<vertex x="26.011825" y="42.877296875"/>
+<vertex x="26.251825" y="43.017296875"/>
+<vertex x="26.471825" y="43.197296875"/>
+<vertex x="26.19434375" y="44.04434375"/>
+<vertex x="26.23" y="44.08"/>
+<vertex x="26.35" y="44.22"/>
+<vertex x="26.95" y="44.06"/>
+<vertex x="27.09" y="44.27"/>
+<vertex x="27.17" y="44.44"/>
+<vertex x="27.26" y="44.67"/>
+<vertex x="26.11" y="44.67"/>
+<vertex x="25.84" y="44.35"/>
+<vertex x="25.53" y="44.09"/>
+<vertex x="25.17" y="43.86"/>
+<vertex x="24.7" y="43.69"/>
+<vertex x="24.19" y="43.64"/>
+<vertex x="23.71" y="43.67"/>
+<vertex x="23.28" y="43.81"/>
+<vertex x="22.98" y="43.94"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="88.98" y="16.75"/>
-<vertex x="89.21" y="17.38"/>
-<vertex x="89.4" y="17.88"/>
-<vertex x="89.54" y="18.25"/>
-<vertex x="89.64" y="18.41"/>
-<vertex x="89.75" y="18.47"/>
-<vertex x="90.05" y="18.47"/>
-<vertex x="90.16" y="18.45"/>
-<vertex x="90.22" y="18.38"/>
-<vertex x="90.27" y="18.27"/>
-<vertex x="90.31" y="18.1"/>
-<vertex x="90.31" y="17.03"/>
-<vertex x="90.01" y="17.03"/>
-<vertex x="90.01" y="18.05"/>
-<vertex x="89.99" y="18.13"/>
-<vertex x="89.94" y="18.19"/>
-<vertex x="89.89" y="18.21"/>
-<vertex x="89.85" y="18.2"/>
-<vertex x="89.81" y="18.15"/>
-<vertex x="89.72" y="17.91"/>
-<vertex x="89.59" y="17.51"/>
-<vertex x="89.41" y="17.07"/>
-<vertex x="89.27" y="16.75"/>
+<vertex x="22.78" y="45.15"/>
+<vertex x="23.01" y="45.78"/>
+<vertex x="23.2" y="46.28"/>
+<vertex x="23.34" y="46.65"/>
+<vertex x="23.44" y="46.81"/>
+<vertex x="23.55" y="46.87"/>
+<vertex x="23.85" y="46.87"/>
+<vertex x="23.96" y="46.85"/>
+<vertex x="24.02" y="46.78"/>
+<vertex x="24.07" y="46.67"/>
+<vertex x="24.11" y="46.5"/>
+<vertex x="24.11" y="45.43"/>
+<vertex x="23.81" y="45.43"/>
+<vertex x="23.81" y="46.45"/>
+<vertex x="23.79" y="46.53"/>
+<vertex x="23.74" y="46.59"/>
+<vertex x="23.69" y="46.61"/>
+<vertex x="23.65" y="46.6"/>
+<vertex x="23.61" y="46.55"/>
+<vertex x="23.52" y="46.31"/>
+<vertex x="23.39" y="45.91"/>
+<vertex x="23.21" y="45.47"/>
+<vertex x="23.07" y="45.15"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="90.31" y="17.03"/>
-<vertex x="90.01" y="17.03"/>
-<vertex x="90.02" y="16.92"/>
-<vertex x="90.07" y="16.83"/>
-<vertex x="90.12" y="16.78"/>
-<vertex x="90.22" y="16.74"/>
-<vertex x="90.39" y="16.73"/>
-<vertex x="90.57" y="16.74"/>
-<vertex x="90.68" y="16.84"/>
-<vertex x="90.77" y="16.99"/>
-<vertex x="90.86" y="17.16"/>
-<vertex x="90.98" y="17.51"/>
-<vertex x="91.07" y="17.79"/>
-<vertex x="91.17" y="18.04"/>
-<vertex x="91.24" y="18.19"/>
-<vertex x="91.28" y="18.22"/>
-<vertex x="91.3" y="18.22"/>
-<vertex x="91.3" y="18.49"/>
-<vertex x="91.15" y="18.48"/>
-<vertex x="91.05" y="18.43"/>
-<vertex x="90.96" y="18.3"/>
-<vertex x="90.87" y="18.11"/>
-<vertex x="90.78" y="17.88"/>
-<vertex x="90.69" y="17.61"/>
-<vertex x="90.59" y="17.35"/>
-<vertex x="90.51" y="17.14"/>
-<vertex x="90.47" y="17.05"/>
-<vertex x="90.41" y="17"/>
-<vertex x="90.36" y="16.99"/>
-<vertex x="90.32" y="17"/>
+<vertex x="24.11" y="45.43"/>
+<vertex x="23.81" y="45.43"/>
+<vertex x="23.82" y="45.32"/>
+<vertex x="23.87" y="45.23"/>
+<vertex x="23.92" y="45.18"/>
+<vertex x="24.02" y="45.14"/>
+<vertex x="24.19" y="45.13"/>
+<vertex x="24.37" y="45.14"/>
+<vertex x="24.48" y="45.24"/>
+<vertex x="24.57" y="45.39"/>
+<vertex x="24.66" y="45.56"/>
+<vertex x="24.78" y="45.91"/>
+<vertex x="24.87" y="46.19"/>
+<vertex x="24.97" y="46.44"/>
+<vertex x="25.04" y="46.59"/>
+<vertex x="25.08" y="46.62"/>
+<vertex x="25.1" y="46.62"/>
+<vertex x="25.1" y="46.89"/>
+<vertex x="24.95" y="46.88"/>
+<vertex x="24.85" y="46.83"/>
+<vertex x="24.76" y="46.7"/>
+<vertex x="24.67" y="46.51"/>
+<vertex x="24.58" y="46.28"/>
+<vertex x="24.49" y="46.01"/>
+<vertex x="24.39" y="45.75"/>
+<vertex x="24.31" y="45.54"/>
+<vertex x="24.27" y="45.45"/>
+<vertex x="24.21" y="45.4"/>
+<vertex x="24.16" y="45.39"/>
+<vertex x="24.12" y="45.4"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="91.3" y="18.22"/>
-<vertex x="91.3" y="18.49"/>
-<vertex x="91.47" y="18.48"/>
-<vertex x="91.57" y="18.44"/>
-<vertex x="91.63" y="18.38"/>
-<vertex x="91.67" y="18.29"/>
-<vertex x="91.67" y="16.74"/>
-<vertex x="91.4" y="16.74"/>
-<vertex x="91.4" y="18.11"/>
-<vertex x="91.38" y="18.16"/>
-<vertex x="91.35" y="18.2"/>
-<vertex x="91.32" y="18.22"/>
+<vertex x="25.1" y="46.62"/>
+<vertex x="25.1" y="46.89"/>
+<vertex x="25.27" y="46.88"/>
+<vertex x="25.37" y="46.84"/>
+<vertex x="25.43" y="46.78"/>
+<vertex x="25.47" y="46.69"/>
+<vertex x="25.47" y="45.14"/>
+<vertex x="25.2" y="45.14"/>
+<vertex x="25.2" y="46.51"/>
+<vertex x="25.18" y="46.56"/>
+<vertex x="25.15" y="46.6"/>
+<vertex x="25.12" y="46.62"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="91.99" y="16.74"/>
-<vertex x="91.99" y="17.04"/>
-<vertex x="92.7" y="17.04"/>
-<vertex x="92.82" y="17.11"/>
-<vertex x="92.9" y="17.21"/>
-<vertex x="92.9" y="18.47"/>
-<vertex x="93.2" y="18.47"/>
-<vertex x="93.2" y="17.2"/>
-<vertex x="93.18" y="17.11"/>
-<vertex x="93.12" y="17"/>
-<vertex x="93" y="16.86"/>
-<vertex x="92.86" y="16.78"/>
-<vertex x="92.73" y="16.74"/>
+<vertex x="25.79" y="45.14"/>
+<vertex x="25.79" y="45.44"/>
+<vertex x="26.5" y="45.44"/>
+<vertex x="26.62" y="45.51"/>
+<vertex x="26.7" y="45.61"/>
+<vertex x="26.7" y="46.87"/>
+<vertex x="27" y="46.87"/>
+<vertex x="27" y="45.6"/>
+<vertex x="26.98" y="45.51"/>
+<vertex x="26.92" y="45.4"/>
+<vertex x="26.8" y="45.26"/>
+<vertex x="26.66" y="45.18"/>
+<vertex x="26.53" y="45.14"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="93.62" y="18.39"/>
-<vertex x="93.67" y="18.44"/>
-<vertex x="93.79" y="18.49"/>
-<vertex x="94.58" y="18.49"/>
-<vertex x="94.8" y="18.45"/>
-<vertex x="94.93" y="18.37"/>
-<vertex x="95" y="18.29"/>
-<vertex x="95.06" y="18.16"/>
-<vertex x="95.09" y="18.01"/>
-<vertex x="95.09" y="17.86"/>
-<vertex x="95.04" y="17.78"/>
-<vertex x="95" y="17.73"/>
-<vertex x="94.54" y="17.73"/>
-<vertex x="94.69" y="17.78"/>
-<vertex x="94.79" y="17.83"/>
-<vertex x="94.8" y="17.94"/>
-<vertex x="94.8" y="18.02"/>
-<vertex x="94.77" y="18.09"/>
-<vertex x="94.68" y="18.16"/>
-<vertex x="94.59" y="18.18"/>
-<vertex x="93.99" y="18.18"/>
-<vertex x="93.93" y="18.17"/>
-<vertex x="93.92" y="18.13"/>
-<vertex x="93.92" y="17.72"/>
-<vertex x="93.62" y="17.72"/>
+<vertex x="27.42" y="46.79"/>
+<vertex x="27.47" y="46.84"/>
+<vertex x="27.59" y="46.89"/>
+<vertex x="28.38" y="46.89"/>
+<vertex x="28.6" y="46.85"/>
+<vertex x="28.73" y="46.77"/>
+<vertex x="28.8" y="46.69"/>
+<vertex x="28.86" y="46.56"/>
+<vertex x="28.89" y="46.41"/>
+<vertex x="28.89" y="46.26"/>
+<vertex x="28.84" y="46.18"/>
+<vertex x="28.8" y="46.13"/>
+<vertex x="28.34" y="46.13"/>
+<vertex x="28.49" y="46.18"/>
+<vertex x="28.59" y="46.23"/>
+<vertex x="28.6" y="46.34"/>
+<vertex x="28.6" y="46.42"/>
+<vertex x="28.57" y="46.49"/>
+<vertex x="28.48" y="46.56"/>
+<vertex x="28.39" y="46.58"/>
+<vertex x="27.79" y="46.58"/>
+<vertex x="27.73" y="46.57"/>
+<vertex x="27.72" y="46.53"/>
+<vertex x="27.72" y="46.12"/>
+<vertex x="27.42" y="46.12"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="95" y="17.73"/>
-<vertex x="93.62" y="17.73"/>
-<vertex x="93.62" y="17.49"/>
-<vertex x="95.01" y="17.49"/>
-<vertex x="94.86" y="17.61"/>
-<vertex x="94.92" y="17.65"/>
+<vertex x="28.8" y="46.13"/>
+<vertex x="27.42" y="46.13"/>
+<vertex x="27.42" y="45.89"/>
+<vertex x="28.81" y="45.89"/>
+<vertex x="28.66" y="46.01"/>
+<vertex x="28.72" y="46.05"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="93.62" y="17.49"/>
-<vertex x="93.62" y="16.83"/>
-<vertex x="93.66" y="16.78"/>
-<vertex x="93.72" y="16.73"/>
-<vertex x="94.65" y="16.73"/>
-<vertex x="94.81" y="16.79"/>
-<vertex x="94.96" y="16.9"/>
-<vertex x="95.04" y="17"/>
-<vertex x="95.09" y="17.13"/>
-<vertex x="95.09" y="17.29"/>
-<vertex x="95.08" y="17.37"/>
-<vertex x="95.04" y="17.46"/>
-<vertex x="95.01" y="17.49"/>
-<vertex x="94.64" y="17.49"/>
-<vertex x="94.72" y="17.43"/>
-<vertex x="94.78" y="17.37"/>
-<vertex x="94.79" y="17.24"/>
-<vertex x="94.77" y="17.13"/>
-<vertex x="94.7" y="17.06"/>
-<vertex x="94.63" y="17.04"/>
-<vertex x="93.94" y="17.04"/>
-<vertex x="93.91" y="17.06"/>
-<vertex x="93.91" y="17.49"/>
+<vertex x="27.42" y="45.89"/>
+<vertex x="27.42" y="45.23"/>
+<vertex x="27.46" y="45.18"/>
+<vertex x="27.52" y="45.13"/>
+<vertex x="28.45" y="45.13"/>
+<vertex x="28.61" y="45.19"/>
+<vertex x="28.76" y="45.3"/>
+<vertex x="28.84" y="45.4"/>
+<vertex x="28.89" y="45.53"/>
+<vertex x="28.89" y="45.69"/>
+<vertex x="28.88" y="45.77"/>
+<vertex x="28.84" y="45.86"/>
+<vertex x="28.81" y="45.89"/>
+<vertex x="28.44" y="45.89"/>
+<vertex x="28.52" y="45.83"/>
+<vertex x="28.58" y="45.77"/>
+<vertex x="28.59" y="45.64"/>
+<vertex x="28.57" y="45.53"/>
+<vertex x="28.5" y="45.46"/>
+<vertex x="28.43" y="45.44"/>
+<vertex x="27.74" y="45.44"/>
+<vertex x="27.71" y="45.46"/>
+<vertex x="27.71" y="45.89"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="95.4" y="17.6"/>
-<vertex x="95.41" y="17.84"/>
-<vertex x="95.42" y="17.93"/>
-<vertex x="95.45" y="18.04"/>
-<vertex x="95.52" y="18.16"/>
-<vertex x="95.62" y="18.27"/>
-<vertex x="95.72" y="18.35"/>
-<vertex x="95.86" y="18.43"/>
-<vertex x="96.02" y="18.46"/>
-<vertex x="96.17" y="18.48"/>
-<vertex x="96.43" y="18.48"/>
-<vertex x="96.56" y="18.47"/>
-<vertex x="96.68" y="18.44"/>
-<vertex x="96.88" y="18.34"/>
-<vertex x="96.96" y="18.27"/>
-<vertex x="97.03" y="18.19"/>
-<vertex x="97.11" y="18.01"/>
-<vertex x="97.14" y="17.92"/>
-<vertex x="97.16" y="17.83"/>
-<vertex x="97.17" y="17.72"/>
-<vertex x="97.18" y="17.58"/>
-<vertex x="96.88" y="17.58"/>
-<vertex x="96.85" y="17.85"/>
-<vertex x="96.8" y="17.96"/>
-<vertex x="96.75" y="18.04"/>
-<vertex x="96.7" y="18.09"/>
-<vertex x="96.64" y="18.13"/>
-<vertex x="96.54" y="18.17"/>
-<vertex x="96.47" y="18.18"/>
-<vertex x="96.07" y="18.18"/>
-<vertex x="96" y="18.16"/>
-<vertex x="95.89" y="18.11"/>
-<vertex x="95.83" y="18.06"/>
-<vertex x="95.78" y="18"/>
-<vertex x="95.75" y="17.96"/>
-<vertex x="95.71" y="17.89"/>
-<vertex x="95.69" y="17.8"/>
-<vertex x="95.68" y="17.72"/>
-<vertex x="95.68" y="17.6"/>
+<vertex x="29.2" y="46"/>
+<vertex x="29.21" y="46.24"/>
+<vertex x="29.22" y="46.33"/>
+<vertex x="29.25" y="46.44"/>
+<vertex x="29.32" y="46.56"/>
+<vertex x="29.42" y="46.67"/>
+<vertex x="29.52" y="46.75"/>
+<vertex x="29.66" y="46.83"/>
+<vertex x="29.82" y="46.86"/>
+<vertex x="29.97" y="46.88"/>
+<vertex x="30.23" y="46.88"/>
+<vertex x="30.36" y="46.87"/>
+<vertex x="30.48" y="46.84"/>
+<vertex x="30.68" y="46.74"/>
+<vertex x="30.76" y="46.67"/>
+<vertex x="30.83" y="46.59"/>
+<vertex x="30.91" y="46.41"/>
+<vertex x="30.94" y="46.32"/>
+<vertex x="30.96" y="46.23"/>
+<vertex x="30.97" y="46.12"/>
+<vertex x="30.98" y="45.98"/>
+<vertex x="30.68" y="45.98"/>
+<vertex x="30.65" y="46.25"/>
+<vertex x="30.6" y="46.36"/>
+<vertex x="30.55" y="46.44"/>
+<vertex x="30.5" y="46.49"/>
+<vertex x="30.44" y="46.53"/>
+<vertex x="30.34" y="46.57"/>
+<vertex x="30.27" y="46.58"/>
+<vertex x="29.87" y="46.58"/>
+<vertex x="29.8" y="46.56"/>
+<vertex x="29.69" y="46.51"/>
+<vertex x="29.63" y="46.46"/>
+<vertex x="29.58" y="46.4"/>
+<vertex x="29.55" y="46.36"/>
+<vertex x="29.51" y="46.29"/>
+<vertex x="29.49" y="46.2"/>
+<vertex x="29.48" y="46.12"/>
+<vertex x="29.48" y="46"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="95.68" y="17.6"/>
-<vertex x="95.4" y="17.6"/>
-<vertex x="95.41" y="17.34"/>
-<vertex x="95.46" y="17.14"/>
-<vertex x="95.55" y="17.01"/>
-<vertex x="95.65" y="16.9"/>
-<vertex x="95.75" y="16.83"/>
-<vertex x="95.9" y="16.77"/>
-<vertex x="96.08" y="16.74"/>
-<vertex x="96.57" y="16.74"/>
-<vertex x="96.66" y="16.75"/>
-<vertex x="96.77" y="16.79"/>
-<vertex x="96.89" y="16.86"/>
-<vertex x="97" y="16.96"/>
-<vertex x="97.08" y="17.11"/>
-<vertex x="97.14" y="17.25"/>
-<vertex x="97.17" y="17.39"/>
-<vertex x="97.18" y="17.5"/>
-<vertex x="97.18" y="17.58"/>
-<vertex x="96.88" y="17.58"/>
-<vertex x="96.88" y="17.52"/>
-<vertex x="96.87" y="17.46"/>
-<vertex x="96.85" y="17.35"/>
-<vertex x="96.82" y="17.27"/>
-<vertex x="96.77" y="17.17"/>
-<vertex x="96.69" y="17.11"/>
-<vertex x="96.58" y="17.06"/>
-<vertex x="96.52" y="17.05"/>
-<vertex x="96.43" y="17.04"/>
-<vertex x="96.06" y="17.04"/>
-<vertex x="96.02" y="17.05"/>
-<vertex x="95.95" y="17.08"/>
-<vertex x="95.84" y="17.14"/>
-<vertex x="95.76" y="17.21"/>
-<vertex x="95.71" y="17.32"/>
-<vertex x="95.68" y="17.49"/>
+<vertex x="29.48" y="46"/>
+<vertex x="29.2" y="46"/>
+<vertex x="29.21" y="45.74"/>
+<vertex x="29.26" y="45.54"/>
+<vertex x="29.35" y="45.41"/>
+<vertex x="29.45" y="45.3"/>
+<vertex x="29.55" y="45.23"/>
+<vertex x="29.7" y="45.17"/>
+<vertex x="29.88" y="45.14"/>
+<vertex x="30.37" y="45.14"/>
+<vertex x="30.46" y="45.15"/>
+<vertex x="30.57" y="45.19"/>
+<vertex x="30.69" y="45.26"/>
+<vertex x="30.8" y="45.36"/>
+<vertex x="30.88" y="45.51"/>
+<vertex x="30.94" y="45.65"/>
+<vertex x="30.97" y="45.79"/>
+<vertex x="30.98" y="45.9"/>
+<vertex x="30.98" y="45.98"/>
+<vertex x="30.68" y="45.98"/>
+<vertex x="30.68" y="45.92"/>
+<vertex x="30.67" y="45.86"/>
+<vertex x="30.65" y="45.75"/>
+<vertex x="30.62" y="45.67"/>
+<vertex x="30.57" y="45.57"/>
+<vertex x="30.49" y="45.51"/>
+<vertex x="30.38" y="45.46"/>
+<vertex x="30.32" y="45.45"/>
+<vertex x="30.23" y="45.44"/>
+<vertex x="29.86" y="45.44"/>
+<vertex x="29.82" y="45.45"/>
+<vertex x="29.75" y="45.48"/>
+<vertex x="29.64" y="45.54"/>
+<vertex x="29.56" y="45.61"/>
+<vertex x="29.51" y="45.72"/>
+<vertex x="29.48" y="45.89"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="97.35" y="18.48"/>
-<vertex x="98.69" y="18.48"/>
-<vertex x="98.69" y="18.17"/>
-<vertex x="98.15" y="18.17"/>
-<vertex x="98.15" y="16.73"/>
-<vertex x="97.88" y="16.73"/>
-<vertex x="97.88" y="18.17"/>
-<vertex x="97.35" y="18.17"/>
+<vertex x="31.15" y="46.88"/>
+<vertex x="32.49" y="46.88"/>
+<vertex x="32.49" y="46.57"/>
+<vertex x="31.95" y="46.57"/>
+<vertex x="31.95" y="45.13"/>
+<vertex x="31.68" y="45.13"/>
+<vertex x="31.68" y="46.57"/>
+<vertex x="31.15" y="46.57"/>
 </polygon>
 <polygon width="0.05" layer="25">
-<vertex x="100.27" y="18.17"/>
-<vertex x="100.27" y="18.48"/>
-<vertex x="99.37" y="18.48"/>
-<vertex x="99.15" y="18.45"/>
-<vertex x="99.07" y="18.4"/>
-<vertex x="99" y="18.35"/>
-<vertex x="98.95" y="18.3"/>
-<vertex x="98.9" y="18.24"/>
-<vertex x="98.88" y="18.2"/>
-<vertex x="98.87" y="17.98"/>
-<vertex x="98.88" y="17.8"/>
-<vertex x="98.91" y="17.7"/>
-<vertex x="98.98" y="17.62"/>
-<vertex x="99.07" y="17.54"/>
-<vertex x="99.19" y="17.49"/>
-<vertex x="99.43" y="17.47"/>
-<vertex x="99.91" y="17.47"/>
-<vertex x="99.97" y="17.46"/>
-<vertex x="100.04" y="17.42"/>
-<vertex x="100.08" y="17.38"/>
-<vertex x="100.1" y="17.28"/>
-<vertex x="100.1" y="17.18"/>
-<vertex x="100.08" y="17.14"/>
-<vertex x="100.04" y="17.09"/>
-<vertex x="99.99" y="17.06"/>
-<vertex x="99.9" y="17.04"/>
-<vertex x="98.87" y="17.04"/>
-<vertex x="98.87" y="16.73"/>
-<vertex x="99.99" y="16.73"/>
-<vertex x="100.06" y="16.75"/>
-<vertex x="100.16" y="16.81"/>
-<vertex x="100.26" y="16.89"/>
-<vertex x="100.35" y="16.99"/>
-<vertex x="100.39" y="17.09"/>
-<vertex x="100.4" y="17.22"/>
-<vertex x="100.4" y="17.33"/>
-<vertex x="100.39" y="17.4"/>
-<vertex x="100.35" y="17.52"/>
-<vertex x="100.29" y="17.59"/>
-<vertex x="100.19" y="17.67"/>
-<vertex x="100.1" y="17.71"/>
-<vertex x="99.96" y="17.75"/>
-<vertex x="99.89" y="17.76"/>
-<vertex x="99.33" y="17.76"/>
-<vertex x="99.24" y="17.79"/>
-<vertex x="99.18" y="17.85"/>
-<vertex x="99.15" y="17.93"/>
-<vertex x="99.15" y="18"/>
-<vertex x="99.17" y="18.06"/>
-<vertex x="99.25" y="18.14"/>
-<vertex x="99.33" y="18.17"/>
+<vertex x="34.07" y="46.57"/>
+<vertex x="34.07" y="46.88"/>
+<vertex x="33.17" y="46.88"/>
+<vertex x="32.95" y="46.85"/>
+<vertex x="32.87" y="46.8"/>
+<vertex x="32.8" y="46.75"/>
+<vertex x="32.75" y="46.7"/>
+<vertex x="32.7" y="46.64"/>
+<vertex x="32.68" y="46.6"/>
+<vertex x="32.67" y="46.38"/>
+<vertex x="32.68" y="46.2"/>
+<vertex x="32.71" y="46.1"/>
+<vertex x="32.78" y="46.02"/>
+<vertex x="32.87" y="45.94"/>
+<vertex x="32.99" y="45.89"/>
+<vertex x="33.23" y="45.87"/>
+<vertex x="33.71" y="45.87"/>
+<vertex x="33.77" y="45.86"/>
+<vertex x="33.84" y="45.82"/>
+<vertex x="33.88" y="45.78"/>
+<vertex x="33.9" y="45.68"/>
+<vertex x="33.9" y="45.58"/>
+<vertex x="33.88" y="45.54"/>
+<vertex x="33.84" y="45.49"/>
+<vertex x="33.79" y="45.46"/>
+<vertex x="33.7" y="45.44"/>
+<vertex x="32.67" y="45.44"/>
+<vertex x="32.67" y="45.13"/>
+<vertex x="33.79" y="45.13"/>
+<vertex x="33.86" y="45.15"/>
+<vertex x="33.96" y="45.21"/>
+<vertex x="34.06" y="45.29"/>
+<vertex x="34.15" y="45.39"/>
+<vertex x="34.19" y="45.49"/>
+<vertex x="34.2" y="45.62"/>
+<vertex x="34.2" y="45.73"/>
+<vertex x="34.19" y="45.8"/>
+<vertex x="34.15" y="45.92"/>
+<vertex x="34.09" y="45.99"/>
+<vertex x="33.99" y="46.07"/>
+<vertex x="33.9" y="46.11"/>
+<vertex x="33.76" y="46.15"/>
+<vertex x="33.69" y="46.16"/>
+<vertex x="33.13" y="46.16"/>
+<vertex x="33.04" y="46.19"/>
+<vertex x="32.98" y="46.25"/>
+<vertex x="32.95" y="46.33"/>
+<vertex x="32.95" y="46.4"/>
+<vertex x="32.97" y="46.46"/>
+<vertex x="33.05" y="46.54"/>
+<vertex x="33.13" y="46.57"/>
 </polygon>
 <text x="42.1" y="8.7" size="1" layer="21" rot="R90">SWG</text>
 <text x="44.1" y="8.7" size="1" layer="21" rot="R90">SWP</text>
@@ -1660,46 +1660,46 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <attribute name="NAME" x="40.8409875" y="7.232740625" size="1.2725" layer="25" rot="R180"/>
 <attribute name="POPULATE" value="1" x="44.8" y="2.6" size="1.778" layer="27" rot="R180" display="off"/>
 </element>
-<element name="U1" library="power_dist" package="21-0487A_MXM" value="MAX15062AATA+T" x="15.8" y="46.4" smashed="yes" rot="R180">
-<attribute name="BUILT_BY" value="EMA_Jessica" x="15.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="COPYRIGHT" value="Copyright (C) 2018 Accelerated Designs. All rights reserved" x="15.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MANUFACTURER_PART_NUMBER" value="MAX15062AATA+T" x="15.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="MPN" value="MAX15062AATA+T" x="15.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="NAME" x="14.3234" y="47.565" size="0.6" layer="25" ratio="10" rot="SR0"/>
-<attribute name="POPULATE" value="1" x="15.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="REVISION" value="1" x="15.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SOURCELIBRARY" value="Maxim_DP_2018-06-12" x="15.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="VENDOR" value="Maxim Integrated Products" x="15.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
+<element name="U1" library="power_dist" package="21-0487A_MXM" value="MAX15062AATA+T" x="14.8" y="46.4" smashed="yes" rot="R180">
+<attribute name="BUILT_BY" value="EMA_Jessica" x="14.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="COPYRIGHT" value="Copyright (C) 2018 Accelerated Designs. All rights reserved" x="14.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MANUFACTURER_PART_NUMBER" value="MAX15062AATA+T" x="14.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="MPN" value="MAX15062AATA+T" x="14.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="NAME" x="13.3234" y="47.565" size="0.6" layer="25" ratio="10" rot="SR0"/>
+<attribute name="POPULATE" value="1" x="14.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="REVISION" value="1" x="14.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SOURCELIBRARY" value="Maxim_DP_2018-06-12" x="14.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="VENDOR" value="Maxim Integrated Products" x="14.8" y="46.4" size="1.778" layer="27" rot="R180" display="off"/>
 </element>
-<element name="C2" library="mfpassives" package="C0603" value="1uF" x="18.8" y="46.6" smashed="yes">
-<attribute name="DIELECTRIC" value="" x="18.8" y="46.6" size="1.778" layer="27" display="off"/>
-<attribute name="HOUSEPART" value="1" x="18.8" y="46.6" size="1.778" layer="27" display="off"/>
-<attribute name="MPN" value="MF-CAP-0603-1uF" x="18.8" y="46.6" size="1.778" layer="27" display="off"/>
-<attribute name="NAME" x="17.7" y="47.7" size="0.6" layer="25" font="vector" ratio="10"/>
-<attribute name="POPULATE" value="1" x="18.8" y="46.6" size="1.778" layer="27" display="off"/>
-<attribute name="TOLERANCE" value="" x="18.8" y="46.6" size="1.778" layer="27" display="off"/>
-<attribute name="URL" value="" x="18.8" y="46.6" size="1.778" layer="27" display="off"/>
-<attribute name="VOLTAGE" value="" x="18.8" y="46.6" size="1.778" layer="27" display="off"/>
+<element name="C2" library="mfpassives" package="C0603" value="1uF" x="17.8" y="46.6" smashed="yes">
+<attribute name="DIELECTRIC" value="" x="17.8" y="46.6" size="1.778" layer="27" display="off"/>
+<attribute name="HOUSEPART" value="1" x="17.8" y="46.6" size="1.778" layer="27" display="off"/>
+<attribute name="MPN" value="MF-CAP-0603-1uF" x="17.8" y="46.6" size="1.778" layer="27" display="off"/>
+<attribute name="NAME" x="16.7" y="47.7" size="0.6" layer="25" font="vector" ratio="10"/>
+<attribute name="POPULATE" value="1" x="17.8" y="46.6" size="1.778" layer="27" display="off"/>
+<attribute name="TOLERANCE" value="" x="17.8" y="46.6" size="1.778" layer="27" display="off"/>
+<attribute name="URL" value="" x="17.8" y="46.6" size="1.778" layer="27" display="off"/>
+<attribute name="VOLTAGE" value="" x="17.8" y="46.6" size="1.778" layer="27" display="off"/>
 </element>
-<element name="L1" library="power_dist" package="IND_TAIYO_CBC3225_TAY" value="CBC3225T330KR" x="12" y="46.4" smashed="yes">
-<attribute name="BUILT_BY" value="EMA_UL_Team" x="12" y="46.4" size="1.778" layer="27" display="off"/>
-<attribute name="MANUFACTURER_PART_NUMBER" value="CBC3225T330KR" x="12" y="46.4" size="1.778" layer="27" display="off"/>
-<attribute name="MPN" value="CBC3225T330KR" x="12" y="46.4" size="1.778" layer="27" display="off"/>
-<attribute name="NAME" x="11.3234" y="48.165" size="0.6" layer="25" ratio="10" rot="SR0"/>
-<attribute name="POPULATE" value="1" x="12" y="46.4" size="1.778" layer="27" display="off"/>
-<attribute name="SOURCELIBRARY" value="TaiyoYuden_2011-01-01_IND_CB" x="12" y="46.4" size="1.778" layer="27" display="off"/>
-<attribute name="VENDOR" value="TAIYO YUDEN" x="12" y="46.4" size="1.778" layer="27" display="off"/>
+<element name="L1" library="power_dist" package="IND_TAIYO_CBC3225_TAY" value="CBC3225T330KR" x="11.4" y="46.4" smashed="yes">
+<attribute name="BUILT_BY" value="EMA_UL_Team" x="11.4" y="46.4" size="1.778" layer="27" display="off"/>
+<attribute name="MANUFACTURER_PART_NUMBER" value="CBC3225T330KR" x="11.4" y="46.4" size="1.778" layer="27" display="off"/>
+<attribute name="MPN" value="CBC3225T330KR" x="11.4" y="46.4" size="1.778" layer="27" display="off"/>
+<attribute name="NAME" x="10.7234" y="48.165" size="0.6" layer="25" ratio="10" rot="SR0"/>
+<attribute name="POPULATE" value="1" x="11.4" y="46.4" size="1.778" layer="27" display="off"/>
+<attribute name="SOURCELIBRARY" value="TaiyoYuden_2011-01-01_IND_CB" x="11.4" y="46.4" size="1.778" layer="27" display="off"/>
+<attribute name="VENDOR" value="TAIYO YUDEN" x="11.4" y="46.4" size="1.778" layer="27" display="off"/>
 </element>
-<element name="C3" library="mfpassives" package="C1206" value="10uF 50V" x="8.6" y="47.2" smashed="yes" rot="R90">
-<attribute name="DIELECTRIC" value="" x="8.6" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="HOUSEPART" value="" x="8.6" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="MF" value="TDK" x="8.6" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="MPN" value="C3216X7R1H106K160AE" x="8.6" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="NAME" x="7.2" y="45.9" size="0.6" layer="25" font="vector" ratio="10" rot="R180"/>
-<attribute name="POPULATE" value="1" x="8.6" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="TOLERANCE" value="" x="8.6" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="URL" value="" x="8.6" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="VOLTAGE" value="" x="8.6" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
+<element name="C3" library="mfpassives" package="C1206" value="10uF 50V" x="8" y="47.2" smashed="yes" rot="R90">
+<attribute name="DIELECTRIC" value="" x="8" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="HOUSEPART" value="" x="8" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="MF" value="TDK" x="8" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="MPN" value="C3216X7R1H106K160AE" x="8" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="NAME" x="6.6" y="45.9" size="0.6" layer="25" font="vector" ratio="10" rot="R180"/>
+<attribute name="POPULATE" value="1" x="8" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="TOLERANCE" value="" x="8" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="URL" value="" x="8" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VOLTAGE" value="" x="8" y="47.2" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="D1" library="power_dist" package="DIODE_DO-214AC" value="SMBJ51CA-E3/52" x="38.8" y="46.1" smashed="yes">
 <attribute name="BUILT_BY" value="EMA_UL_Team" x="38.8" y="46.1" size="1.778" layer="27" display="off"/>
@@ -1846,30 +1846,30 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <element name="Q4" library="mfdiscretesemi" package="SOT-23-3" value="MF-DSC-SOT233-BSS138" x="31.2" y="37.4" smashed="yes" rot="R90">
 <attribute name="HOUSEPART" value="YES" x="31.2" y="37.4" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="MF-DSC-SOT233-BSS138" x="31.2" y="37.4" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="NAME" x="30" y="39.32" size="0.6" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="31.4" y="35.48" size="0.6" layer="25" font="vector" ratio="10" rot="R180"/>
 <attribute name="POPULATE" value="1" x="31.2" y="37.4" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="URL" value="https://factory.macrofab.com/part/MF-DSC-SOT233-BSS138" x="31.2" y="37.4" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="R4" library="mfpassives" package="R0603" value="47k 1%" x="28.9" y="37.2" smashed="yes" rot="R270">
 <attribute name="HOUSEPART" value="" x="28.9" y="37.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MPN" value="" x="28.9" y="37.2" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="28.4" y="38.8" size="0.6" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="28" y="37.2" size="0.6" layer="25" font="vector" ratio="10" rot="R90"/>
 <attribute name="POPULATE" value="1" x="28.9" y="37.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="TOLERANCE" value="" x="28.9" y="37.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="URL" value="" x="28.9" y="37.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="VOLTAGE" value="" x="28.9" y="37.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="WATTAGE" value="" x="28.9" y="37.2" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
-<element name="C1" library="mfpassives" package="C0805" value="1uF 100V" x="19.2" y="44.8" smashed="yes">
-<attribute name="DIELECTRIC" value="" x="19.2" y="44.8" size="1.778" layer="27" display="off"/>
-<attribute name="HOUSEPART" value="" x="19.2" y="44.8" size="1.778" layer="27" display="off"/>
-<attribute name="MF" value="MURATA" x="19.2" y="44.8" size="1.778" layer="27" display="off"/>
-<attribute name="MPN" value="GCM21BC72A105KE36L" x="19.2" y="44.8" size="1.778" layer="27" display="off"/>
-<attribute name="NAME" x="21.8" y="44.3" size="0.6" layer="25" font="vector" ratio="10"/>
-<attribute name="POPULATE" value="1" x="19.2" y="44.8" size="1.778" layer="27" display="off"/>
-<attribute name="TOLERANCE" value="" x="19.2" y="44.8" size="1.778" layer="27" display="off"/>
-<attribute name="URL" value="" x="19.2" y="44.8" size="1.778" layer="27" display="off"/>
-<attribute name="VOLTAGE" value="" x="19.2" y="44.8" size="1.778" layer="27" display="off"/>
+<element name="C1" library="mfpassives" package="C0805" value="1uF 100V" x="18.2" y="44.8" smashed="yes">
+<attribute name="DIELECTRIC" value="" x="18.2" y="44.8" size="1.778" layer="27" display="off"/>
+<attribute name="HOUSEPART" value="" x="18.2" y="44.8" size="1.778" layer="27" display="off"/>
+<attribute name="MF" value="MURATA" x="18.2" y="44.8" size="1.778" layer="27" display="off"/>
+<attribute name="MPN" value="GCM21BC72A105KE36L" x="18.2" y="44.8" size="1.778" layer="27" display="off"/>
+<attribute name="NAME" x="20.8" y="44.3" size="0.6" layer="25" font="vector" ratio="10"/>
+<attribute name="POPULATE" value="1" x="18.2" y="44.8" size="1.778" layer="27" display="off"/>
+<attribute name="TOLERANCE" value="" x="18.2" y="44.8" size="1.778" layer="27" display="off"/>
+<attribute name="URL" value="" x="18.2" y="44.8" size="1.778" layer="27" display="off"/>
+<attribute name="VOLTAGE" value="" x="18.2" y="44.8" size="1.778" layer="27" display="off"/>
 </element>
 <element name="U3" library="power_dist" package="MXA28A_TEX" value="LM5066IPMHE/NOPB" x="36" y="31.4" smashed="yes" rot="R270">
 <attribute name="BUILT_BY" value="EMA_UL_Team" x="36" y="31.4" size="1.778" layer="27" rot="R270" display="off"/>
@@ -1942,7 +1942,7 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <element name="R5" library="mfpassives" package="R0603" value="15k 1%" x="28.9" y="34.4" smashed="yes" rot="R270">
 <attribute name="HOUSEPART" value="" x="28.9" y="34.4" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MPN" value="" x="28.9" y="34.4" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="29.4" y="32.4" size="0.6" layer="25" font="vector" ratio="10" rot="R180"/>
+<attribute name="NAME" x="28" y="34.2" size="0.6" layer="25" font="vector" ratio="10" rot="R90"/>
 <attribute name="POPULATE" value="1" x="28.9" y="34.4" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="TOLERANCE" value="" x="28.9" y="34.4" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="URL" value="" x="28.9" y="34.4" size="1.778" layer="27" rot="R270" display="off"/>
@@ -1962,8 +1962,8 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <element name="DB_G" library="precharge" package="24AWG_PAD" value="PAD24AWG_PAD" x="7.8" y="7.4" smashed="yes">
 <attribute name="POPULATE" value="0" x="7.4" y="7.8" size="1.778" layer="27" display="off"/>
 </element>
-<element name="DB_VIN" library="precharge" package="24AWG_PAD" value="PAD24AWG_PAD" x="28.4" y="46.8" smashed="yes">
-<attribute name="POPULATE" value="0" x="28.4" y="46.8" size="1.778" layer="27" display="off"/>
+<element name="DB_VIN" library="precharge" package="24AWG_PAD" value="PAD24AWG_PAD" x="35.4" y="46.2" smashed="yes">
+<attribute name="POPULATE" value="0" x="35.4" y="46.2" size="1.778" layer="27" display="off"/>
 </element>
 <element name="DB_VSW" library="precharge" package="24AWG_PAD" value="PAD24AWG_PAD" x="67.6" y="48" smashed="yes">
 <attribute name="POPULATE" value="0" x="67.6" y="48" size="1.778" layer="27" display="off"/>
@@ -2117,36 +2117,36 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <vertex x="28.4" y="26.8"/>
 </polygon>
 <via x="29.3" y="27.3" extent="1-16" drill="0.5"/>
-<via x="21.2" y="45.2" extent="1-16" drill="0.5"/>
-<via x="20.8" y="46.4" extent="1-16" drill="0.5"/>
-<via x="20.8" y="47.6" extent="1-16" drill="0.5"/>
-<via x="21.2" y="44" extent="1-16" drill="0.5"/>
+<via x="20.1" y="45.2" extent="1-16" drill="0.5"/>
+<via x="19.8" y="46.4" extent="1-16" drill="0.5"/>
+<via x="19.8" y="47.6" extent="1-16" drill="0.5"/>
+<via x="20.1" y="44" extent="1-16" drill="0.5"/>
 <polygon width="0.1524" layer="1" thermals="no">
-<vertex x="19.8" y="44"/>
-<vertex x="19.8" y="45.6"/>
-<vertex x="19.2" y="46.2"/>
-<vertex x="19.2" y="48.2"/>
-<vertex x="22.2" y="48.2"/>
-<vertex x="22.2" y="43.4"/>
-<vertex x="20.4" y="43.4"/>
+<vertex x="18.8" y="44"/>
+<vertex x="18.8" y="45.6"/>
+<vertex x="18.2" y="46.2"/>
+<vertex x="18.2" y="48.2"/>
+<vertex x="20.7" y="48.2"/>
+<vertex x="20.7" y="43.4"/>
+<vertex x="19.4" y="43.4"/>
 </polygon>
-<via x="15.8" y="44.8" extent="1-16" drill="0.5"/>
-<wire x1="15.8" y1="44.8" x2="15.8" y2="45.6" width="0.254" layer="1"/>
-<wire x1="15.8" y1="45.6" x2="15.25" y2="46.15" width="0.254" layer="1"/>
-<wire x1="14.8475" y1="46.15" x2="15.25" y2="46.15" width="0.254" layer="1"/>
-<via x="7" y="49" extent="1-16" drill="0.5"/>
-<via x="7" y="48" extent="1-16" drill="0.5"/>
-<via x="8.2" y="47.6" extent="1-16" drill="0.5"/>
+<via x="14.8" y="44.8" extent="1-16" drill="0.5"/>
+<wire x1="14.8" y1="44.8" x2="14.8" y2="45.6" width="0.254" layer="1"/>
+<wire x1="14.8" y1="45.6" x2="14.25" y2="46.15" width="0.254" layer="1"/>
+<wire x1="13.8475" y1="46.15" x2="14.25" y2="46.15" width="0.254" layer="1"/>
+<via x="6.4" y="49" extent="1-16" drill="0.5"/>
+<via x="6.4" y="48" extent="1-16" drill="0.5"/>
+<via x="7.6" y="47.6" extent="1-16" drill="0.5"/>
 <polygon width="0.1524" layer="1" thermals="no">
-<vertex x="6.6" y="49.6"/>
-<vertex x="9.6" y="49.6"/>
-<vertex x="9.6" y="48.2"/>
-<vertex x="8.2" y="46.8"/>
-<vertex x="6.6" y="46.8"/>
+<vertex x="6" y="49.6"/>
+<vertex x="9" y="49.6"/>
+<vertex x="9" y="48.2"/>
+<vertex x="7.6" y="46.8"/>
+<vertex x="6" y="46.8"/>
 </polygon>
-<via x="15.8" y="47.8" extent="1-16" drill="0.5"/>
-<wire x1="15.25" y1="46.15" x2="15.8" y2="46.7" width="0.254" layer="1"/>
-<wire x1="15.8" y1="46.7" x2="15.8" y2="47.8" width="0.254" layer="1"/>
+<via x="14.8" y="47.8" extent="1-16" drill="0.5"/>
+<wire x1="14.25" y1="46.15" x2="14.8" y2="46.7" width="0.254" layer="1"/>
+<wire x1="14.8" y1="46.7" x2="14.8" y2="47.8" width="0.254" layer="1"/>
 <via x="41.8" y="30.6" extent="1-16" drill="0.3048"/>
 <wire x1="41.8" y1="31.45" x2="41.8" y2="30.6" width="0.254" layer="1"/>
 <via x="42.4" y="25.4" extent="1-16" drill="0.3048"/>
@@ -2309,24 +2309,24 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <vertex x="0.4" y="3.8"/>
 <vertex x="0.4" y="47"/>
 </polygon>
-<via x="8" y="44.6" extent="1-16" drill="0.5"/>
-<via x="9.2" y="44.6" extent="1-16" drill="0.5"/>
-<via x="8" y="43.6" extent="1-16" drill="0.5"/>
-<via x="9.2" y="43.6" extent="1-16" drill="0.5"/>
+<via x="7.4" y="44.6" extent="1-16" drill="0.5"/>
+<via x="8.6" y="44.6" extent="1-16" drill="0.5"/>
+<via x="7.4" y="43.6" extent="1-16" drill="0.5"/>
+<via x="8.6" y="43.6" extent="1-16" drill="0.5"/>
 <polygon width="0.1524" layer="1" thermals="no">
-<vertex x="7.6" y="46.4"/>
-<vertex x="8.4" y="46.4"/>
-<vertex x="10.2" y="48.2"/>
-<vertex x="11.6" y="48.2"/>
-<vertex x="11.6" y="43"/>
-<vertex x="7.6" y="43"/>
+<vertex x="7" y="46.4"/>
+<vertex x="7.8" y="46.4"/>
+<vertex x="9.6" y="48.2"/>
+<vertex x="11" y="48.2"/>
+<vertex x="11" y="43"/>
+<vertex x="7" y="43"/>
 </polygon>
-<via x="10.4" y="44.6" extent="1-16" drill="0.5"/>
-<via x="10.4" y="43.6" extent="1-16" drill="0.5"/>
-<via x="16.8" y="48.2" extent="1-16" drill="0.5"/>
-<wire x1="16.7525" y1="47.15" x2="16.7525" y2="47.5525" width="0.254" layer="1"/>
-<wire x1="16.7525" y1="47.5525" x2="16.8" y2="47.6" width="0.254" layer="1"/>
-<wire x1="16.8" y1="47.6" x2="16.8" y2="48.2" width="0.254" layer="1"/>
+<via x="9.8" y="44.6" extent="1-16" drill="0.5"/>
+<via x="9.8" y="43.6" extent="1-16" drill="0.5"/>
+<via x="15.8" y="48.2" extent="1-16" drill="0.5"/>
+<wire x1="15.7525" y1="47.15" x2="15.7525" y2="47.5525" width="0.254" layer="1"/>
+<wire x1="15.7525" y1="47.5525" x2="15.8" y2="47.6" width="0.254" layer="1"/>
+<wire x1="15.8" y1="47.6" x2="15.8" y2="48.2" width="0.254" layer="1"/>
 <via x="32.6" y="21.1" extent="1-16" drill="0.3048"/>
 <via x="34" y="21.1" extent="1-16" drill="0.3048"/>
 <via x="35.4" y="21.1" extent="1-16" drill="0.3048"/>
@@ -2515,14 +2515,13 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <via x="33.4" y="42" extent="1-16" drill="0.5"/>
 <via x="33.4" y="40.8" extent="1-16" drill="0.5"/>
 <polygon width="0.1524" layer="1" thermals="no">
+<vertex x="15.4" y="46.2"/>
 <vertex x="16.4" y="46.2"/>
-<vertex x="17.2" y="46.2"/>
-<vertex x="17.4" y="46.2"/>
-<vertex x="18.2" y="45.4"/>
-<vertex x="18.8" y="45.4"/>
-<vertex x="18.8" y="44"/>
-<vertex x="17.6" y="44"/>
-<vertex x="16.4" y="45.2"/>
+<vertex x="17.2" y="45.4"/>
+<vertex x="17.8" y="45.4"/>
+<vertex x="17.8" y="44"/>
+<vertex x="16.2" y="44"/>
+<vertex x="15.4" y="44.8"/>
 </polygon>
 <wire x1="28.9" y1="37.95" x2="28.9" y2="40.3" width="0.254" layer="1"/>
 <wire x1="29.4" y1="40.8" x2="33.4" y2="40.8" width="0.254" layer="1"/>
@@ -2533,30 +2532,30 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <wire x1="37.95" y1="36.6" x2="37.95" y2="37.2" width="0.254" layer="1"/>
 <wire x1="36.8" y1="41.8" x2="37.95" y2="40.65" width="0.254" layer="1"/>
 <wire x1="37.95" y1="40.65" x2="37.95" y2="37.2" width="0.254" layer="1"/>
-<wire x1="18.25" y1="44.8" x2="18.25" y2="41.35" width="0.8128" layer="1"/>
+<wire x1="17.25" y1="44.8" x2="17.25" y2="42.35" width="0.8128" layer="1"/>
 <wire x1="23.05" y1="38.6" x2="23.4" y2="38.25" width="0.8128" layer="1"/>
-<wire x1="18.25" y1="41.35" x2="21" y2="38.6" width="0.8128" layer="1"/>
+<wire x1="17.25" y1="42.35" x2="21" y2="38.6" width="0.8128" layer="1"/>
 <wire x1="21" y1="38.6" x2="23.05" y2="38.6" width="0.8128" layer="1"/>
 </signal>
 <signal name="N$4">
 <contactref element="U1" pad="3"/>
 <contactref element="C2" pad="P$1"/>
-<wire x1="16.7525" y1="46.65" x2="18" y2="46.65" width="0.254" layer="1"/>
-<wire x1="18" y1="46.65" x2="18.05" y2="46.6" width="0.254" layer="1"/>
+<wire x1="15.7525" y1="46.65" x2="17" y2="46.65" width="0.254" layer="1"/>
+<wire x1="17" y1="46.65" x2="17.05" y2="46.6" width="0.254" layer="1"/>
 </signal>
 <signal name="N$1">
 <contactref element="U1" pad="8"/>
 <contactref element="L1" pad="2"/>
 <polygon width="0.1524" layer="1" thermals="no">
-<vertex x="12.8" y="47.8"/>
-<vertex x="13.8" y="47.8"/>
-<vertex x="13.8" y="46.4"/>
-<vertex x="14.5" y="45.7"/>
-<vertex x="15.1" y="45.7"/>
-<vertex x="15.1" y="45.6"/>
-<vertex x="14.6" y="45.6"/>
-<vertex x="14.1" y="45.1"/>
-<vertex x="12.8" y="45.1"/>
+<vertex x="12.2" y="47.8"/>
+<vertex x="13.2" y="47.8"/>
+<vertex x="13.2" y="46"/>
+<vertex x="13.5" y="45.7"/>
+<vertex x="14.1" y="45.7"/>
+<vertex x="14.1" y="45.6"/>
+<vertex x="13.6" y="45.6"/>
+<vertex x="13.1" y="45.1"/>
+<vertex x="12.2" y="45.1"/>
 </polygon>
 </signal>
 <signal name="VIN_POST">
