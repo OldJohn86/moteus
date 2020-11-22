@@ -1870,7 +1870,7 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <attribute name="HOUSEPART" value="" x="43.8" y="32.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MF" value="YAGEO" x="43.8" y="32.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MPN" value="RC0603FR-071KL" x="43.8" y="32.2" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="43.2" y="33.7" size="0.6" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="43.85" y="30.8" size="0.6" layer="25" font="vector" ratio="10" rot="R270"/>
 <attribute name="POPULATE" value="1" x="43.8" y="32.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="TOLERANCE" value="" x="43.8" y="32.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="URL" value="" x="43.8" y="32.2" size="1.778" layer="27" rot="R270" display="off"/>
@@ -1880,14 +1880,14 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <element name="D2" library="mfdiscretesemi" package="SOD-123" value="MF-DIO-SOD123-1N4148" x="42.05" y="31.2" smashed="yes" rot="R90">
 <attribute name="HOUSEPART" value="1" x="42.05" y="31.2" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="MF-DIO-SOD123-1N4148" x="42.05" y="31.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="NAME" x="41.45" y="33.69" size="0.6" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="42.99" y="29.5" size="0.6" layer="25" font="vector" ratio="10" rot="R270"/>
 <attribute name="POPULATE" value="1" x="42.05" y="31.2" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="URL" value="https://factory.macrofab.com/part/MF-DIO-SOD123-1N4148" x="42.05" y="31.2" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="Q5" library="mfdiscretesemi" package="SOT-23-3" value="MF-DSC-SOT233-MMBT3906" x="42.8" y="26.4" smashed="yes" rot="R270">
 <attribute name="HOUSEPART" value="1" x="42.8" y="26.4" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MPN" value="MF-DSC-SOT233-MMBT3906" x="42.8" y="26.4" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="44.2" y="24.48" size="0.6" layer="25" font="vector" ratio="10" rot="R180"/>
+<attribute name="NAME" x="43.75" y="28.32" size="0.6" layer="25" font="vector" ratio="10"/>
 <attribute name="POPULATE" value="1" x="42.8" y="26.4" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="URL" value="https://factory.macrofab.com/part/MF-DSC-SOT233-MMBT3906" x="42.8" y="26.4" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
@@ -2103,7 +2103,7 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <attribute name="HOUSEPART" value="" x="41.9" y="35.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MF" value="" x="41.9" y="35.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MPN" value="" x="41.9" y="35.2" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="43" y="36.6" size="0.6" layer="25" font="vector" ratio="10" rot="R270"/>
+<attribute name="NAME" x="42.55" y="36.75" size="0.6" layer="25" font="vector" ratio="10" rot="R90"/>
 <attribute name="POPULATE" value="0" x="41.9" y="35.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="TOLERANCE" value="" x="41.9" y="35.2" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="URL" value="" x="41.9" y="35.2" size="1.778" layer="27" rot="R270" display="off"/>
@@ -2114,7 +2114,7 @@ This DRC check is for 4-Layer Standard Capability boards to be manufactured thro
 <attribute name="HOUSEPART" value="" x="43.4" y="35.2" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MF" value="" x="43.4" y="35.2" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="" x="43.4" y="35.2" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="NAME" x="42.3" y="33.8" size="0.6" layer="25" font="vector" ratio="10" rot="R90"/>
+<attribute name="NAME" x="43.5" y="36.75" size="0.6" layer="25" font="vector" ratio="10" rot="R90"/>
 <attribute name="POPULATE" value="0" x="43.4" y="35.2" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="TOLERANCE" value="" x="43.4" y="35.2" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="URL" value="" x="43.4" y="35.2" size="1.778" layer="27" rot="R90" display="off"/>
