@@ -3848,6 +3848,19 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/STM32G474CEU6
 <part name="R16" library="mfpassives" deviceset="RESISTOR" device="_0603" value="DNP">
 <attribute name="POPULATE" value="0"/>
 </part>
+<part name="R17" library="mfpassives" deviceset="RESISTOR" device="_0603" value="DNP">
+<attribute name="MF" value=""/>
+<attribute name="POPULATE" value="0"/>
+</part>
+<part name="R18" library="mfpassives" deviceset="RESISTOR" device="_0603" value="DNP">
+<attribute name="MF" value=""/>
+<attribute name="POPULATE" value="0"/>
+</part>
+<part name="R19" library="mfpassives" deviceset="RESISTOR" device="_0603" value="DNP">
+<attribute name="MF" value=""/>
+<attribute name="POPULATE" value="0"/>
+</part>
+<part name="GND27" library="supply1" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -4199,9 +4212,9 @@ Lower OVLO: 54.87</text>
 <attribute name="NAME" x="60.96" y="-44.196" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="60.96" y="-47.244" size="1.016" layer="96" font="vector"/>
 </instance>
-<instance part="C14" gate="G$1" x="86.36" y="-71.12" smashed="yes">
-<attribute name="NAME" x="88.9" y="-69.596" size="1.016" layer="95" font="vector" align="top-left"/>
-<attribute name="VALUE" x="88.9" y="-72.644" size="1.016" layer="96" font="vector"/>
+<instance part="C14" gate="G$1" x="93.98" y="-58.42" smashed="yes">
+<attribute name="NAME" x="96.52" y="-56.896" size="1.016" layer="95" font="vector" align="top-left"/>
+<attribute name="VALUE" x="96.52" y="-59.944" size="1.016" layer="96" font="vector"/>
 </instance>
 <instance part="R12" gate="G$1" x="73.66" y="-50.8" smashed="yes">
 <attribute name="NAME" x="76.2" y="-49.276" size="1.016" layer="95" font="vector" align="top-left"/>
@@ -4215,9 +4228,9 @@ Lower OVLO: 54.87</text>
 <attribute name="NAME" x="76.2" y="-38.1" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="76.2" y="-40.64" size="1.016" layer="96" font="vector"/>
 </instance>
-<instance part="Q5" gate="G$1" x="83.82" y="-58.42" smashed="yes">
-<attribute name="NAME" x="88.9" y="-53.34" size="1.016" layer="95" font="vector" rot="R180" align="bottom-right"/>
-<attribute name="VALUE" x="88.9" y="-55.88" size="1.016" layer="96" font="vector"/>
+<instance part="Q5" gate="G$1" x="83.82" y="-58.42" smashed="yes" rot="MR180">
+<attribute name="NAME" x="88.9" y="-63.5" size="1.016" layer="95" font="vector" rot="MR0" align="bottom-right"/>
+<attribute name="VALUE" x="88.9" y="-60.96" size="1.016" layer="96" font="vector" rot="MR180"/>
 </instance>
 <instance part="Q4" gate="G$1" x="-68.58" y="-43.18" smashed="yes">
 <attribute name="NAME" x="-71.12" y="-38.1" size="1.016" layer="95" font="vector" rot="R180" align="bottom-right"/>
@@ -4369,6 +4382,24 @@ Lower OVLO: 54.87</text>
 <instance part="R16" gate="G$1" x="7.62" y="162.56" smashed="yes">
 <attribute name="NAME" x="10.16" y="164.084" size="1.016" layer="95" font="vector" align="top-left"/>
 <attribute name="VALUE" x="10.16" y="161.036" size="1.016" layer="96" font="vector"/>
+</instance>
+<instance part="R17" gate="G$1" x="48.26" y="-17.78" smashed="yes">
+<attribute name="NAME" x="50.8" y="-16.256" size="1.016" layer="95" font="vector" align="top-left"/>
+<attribute name="VALUE" x="50.8" y="-19.304" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="48.26" y="-17.78" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="R18" gate="G$1" x="68.58" y="15.24" smashed="yes">
+<attribute name="NAME" x="71.12" y="16.764" size="1.016" layer="95" font="vector" align="top-left"/>
+<attribute name="VALUE" x="71.12" y="13.716" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="68.58" y="15.24" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="R19" gate="G$1" x="68.58" y="2.54" smashed="yes">
+<attribute name="NAME" x="71.12" y="4.064" size="1.016" layer="95" font="vector" align="top-left"/>
+<attribute name="VALUE" x="71.12" y="1.016" size="1.016" layer="96" font="vector"/>
+<attribute name="MF" x="68.58" y="2.54" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="GND27" gate="1" x="68.58" y="-7.62" smashed="yes">
+<attribute name="VALUE" x="66.04" y="-10.16" size="1.778" layer="96"/>
 </instance>
 </instances>
 <busses>
@@ -4554,18 +4585,16 @@ Lower OVLO: 54.87</text>
 <junction x="58.42" y="-53.34"/>
 </segment>
 <segment>
-<pinref part="R12" gate="G$1" pin="P$2"/>
-<wire x1="73.66" y1="-55.88" x2="73.66" y2="-58.42" width="0.1524" layer="91"/>
-<wire x1="73.66" y1="-58.42" x2="73.66" y2="-73.66" width="0.1524" layer="91"/>
-<wire x1="73.66" y1="-73.66" x2="81.28" y2="-73.66" width="0.1524" layer="91"/>
-<pinref part="C14" gate="G$1" pin="P$2"/>
-<wire x1="81.28" y1="-73.66" x2="86.36" y2="-73.66" width="0.1524" layer="91"/>
 <pinref part="GND13" gate="1" pin="GND"/>
 <wire x1="81.28" y1="-73.66" x2="81.28" y2="-76.2" width="0.1524" layer="91"/>
-<junction x="81.28" y="-73.66"/>
-<pinref part="Q5" gate="G$1" pin="BASE"/>
-<wire x1="76.2" y1="-58.42" x2="73.66" y2="-58.42" width="0.1524" layer="91"/>
-<junction x="73.66" y="-58.42"/>
+<pinref part="Q5" gate="G$1" pin="COLLECTOR"/>
+<wire x1="86.36" y1="-66.04" x2="86.36" y2="-68.58" width="0.1524" layer="91"/>
+<wire x1="86.36" y1="-68.58" x2="86.36" y2="-73.66" width="0.1524" layer="91"/>
+<wire x1="86.36" y1="-73.66" x2="81.28" y2="-73.66" width="0.1524" layer="91"/>
+<pinref part="C14" gate="G$1" pin="P$2"/>
+<wire x1="93.98" y1="-60.96" x2="93.98" y2="-68.58" width="0.1524" layer="91"/>
+<wire x1="93.98" y1="-68.58" x2="86.36" y2="-68.58" width="0.1524" layer="91"/>
+<junction x="86.36" y="-68.58"/>
 </segment>
 <segment>
 <pinref part="J3" gate="A" pin="5"/>
@@ -4608,6 +4637,11 @@ Lower OVLO: 54.87</text>
 <wire x1="7.62" y1="157.48" x2="7.62" y2="154.94" width="0.1524" layer="91"/>
 <wire x1="7.62" y1="154.94" x2="0" y2="154.94" width="0.1524" layer="91"/>
 <junction x="0" y="154.94"/>
+</segment>
+<segment>
+<pinref part="GND27" gate="1" pin="GND"/>
+<pinref part="R19" gate="G$1" pin="P$2"/>
+<wire x1="68.58" y1="-2.54" x2="68.58" y2="-5.08" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="VCC" class="1">
@@ -5009,7 +5043,8 @@ Lower OVLO: 54.87</text>
 <junction x="12.7" y="27.94"/>
 <pinref part="D3" gate="A" pin="CATHODE"/>
 <wire x1="12.7" y1="10.16" x2="12.7" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="83.82" y1="22.86" x2="20.32" y2="22.86" width="0.1524" layer="91"/>
+<wire x1="83.82" y1="22.86" x2="68.58" y2="22.86" width="0.1524" layer="91"/>
+<wire x1="68.58" y1="22.86" x2="20.32" y2="22.86" width="0.1524" layer="91"/>
 <wire x1="20.32" y1="22.86" x2="20.32" y2="27.94" width="0.1524" layer="91"/>
 <junction x="20.32" y="27.94"/>
 <pinref part="Q1" gate="A" pin="S"/>
@@ -5021,7 +5056,7 @@ Lower OVLO: 54.87</text>
 <wire x1="-15.24" y1="-2.54" x2="-2.54" y2="-2.54" width="0.1524" layer="91"/>
 <wire x1="-2.54" y1="-2.54" x2="12.7" y2="-2.54" width="0.1524" layer="91"/>
 <wire x1="12.7" y1="-2.54" x2="12.7" y2="10.16" width="0.1524" layer="91"/>
-<wire x1="20.32" y1="27.94" x2="99.06" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="27.94" x2="101.6" y2="27.94" width="0.1524" layer="91"/>
 <wire x1="101.6" y1="27.94" x2="106.68" y2="27.94" width="0.1524" layer="91"/>
 <wire x1="-2.54" y1="-2.54" x2="-2.54" y2="-12.7" width="0.1524" layer="91"/>
 <wire x1="-2.54" y1="-12.7" x2="-27.94" y2="-12.7" width="0.1524" layer="91"/>
@@ -5030,9 +5065,11 @@ Lower OVLO: 54.87</text>
 <wire x1="-27.94" y1="-20.32" x2="-25.4" y2="-20.32" width="0.1524" layer="91"/>
 <pinref part="C15" gate="G$1" pin="P$1"/>
 <wire x1="101.6" y1="5.08" x2="101.6" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="101.6" y1="27.94" x2="99.06" y2="27.94" width="0.1524" layer="91"/>
 <junction x="101.6" y="27.94"/>
 <junction x="-2.54" y="-2.54"/>
+<pinref part="R18" gate="G$1" pin="P$1"/>
+<wire x1="68.58" y1="20.32" x2="68.58" y2="22.86" width="0.1524" layer="91"/>
+<junction x="68.58" y="22.86"/>
 </segment>
 <segment>
 <pinref part="P6" gate="G$1" pin="2"/>
@@ -5103,19 +5140,16 @@ Lower OVLO: 54.87</text>
 <wire x1="58.42" y1="-30.48" x2="40.64" y2="-30.48" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$12" class="0">
-<segment>
-<pinref part="Q5" gate="G$1" pin="EMITTER"/>
-<pinref part="C14" gate="G$1" pin="P$1"/>
-<wire x1="86.36" y1="-66.04" x2="86.36" y2="-68.58" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="N$13" class="0">
 <segment>
-<pinref part="Q5" gate="G$1" pin="COLLECTOR"/>
-<wire x1="86.36" y1="-50.8" x2="86.36" y2="-43.18" width="0.1524" layer="91"/>
 <pinref part="D2" gate="G$1" pin="CATHODE"/>
-<wire x1="86.36" y1="-43.18" x2="81.28" y2="-43.18" width="0.1524" layer="91"/>
+<wire x1="93.98" y1="-43.18" x2="81.28" y2="-43.18" width="0.1524" layer="91"/>
+<pinref part="Q5" gate="G$1" pin="EMITTER"/>
+<wire x1="86.36" y1="-50.8" x2="93.98" y2="-50.8" width="0.1524" layer="91"/>
+<pinref part="C14" gate="G$1" pin="P$1"/>
+<wire x1="93.98" y1="-50.8" x2="93.98" y2="-55.88" width="0.1524" layer="91"/>
+<wire x1="93.98" y1="-43.18" x2="93.98" y2="-50.8" width="0.1524" layer="91"/>
+<junction x="93.98" y="-50.8"/>
 </segment>
 </net>
 <net name="PSHDN" class="0">
@@ -5155,12 +5189,18 @@ Lower OVLO: 54.87</text>
 <pinref part="R10" gate="A" pin="S2"/>
 </segment>
 </net>
-<net name="N$6" class="0">
+<net name="VDD" class="0">
 <segment>
 <pinref part="U3" gate="A" pin="VDD"/>
 <wire x1="40.64" y1="-40.64" x2="50.8" y2="-40.64" width="0.1524" layer="91"/>
 <wire x1="50.8" y1="-40.64" x2="50.8" y2="-43.18" width="0.1524" layer="91"/>
 <pinref part="C12" gate="G$1" pin="P$1"/>
+<label x="45.72" y="-40.64" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R17" gate="G$1" pin="P$1"/>
+<wire x1="48.26" y1="-12.7" x2="48.26" y2="2.54" width="0.1524" layer="91"/>
+<label x="48.26" y="0" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="SDA" class="0">
@@ -5319,6 +5359,33 @@ Lower OVLO: 54.87</text>
 <junction x="0" y="170.18"/>
 </segment>
 </net>
+<net name="N$16" class="0">
+<segment>
+<pinref part="R12" gate="G$1" pin="P$2"/>
+<wire x1="73.66" y1="-55.88" x2="73.66" y2="-58.42" width="0.1524" layer="91"/>
+<pinref part="Q5" gate="G$1" pin="BASE"/>
+<wire x1="76.2" y1="-58.42" x2="73.66" y2="-58.42" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$12" class="0">
+<segment>
+<pinref part="U3" gate="A" pin="PGD"/>
+<pinref part="R17" gate="G$1" pin="P$2"/>
+<wire x1="40.64" y1="-22.86" x2="48.26" y2="-22.86" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$6" class="0">
+<segment>
+<pinref part="R19" gate="G$1" pin="P$1"/>
+<pinref part="R18" gate="G$1" pin="P$2"/>
+<wire x1="68.58" y1="10.16" x2="68.58" y2="7.62" width="0.1524" layer="91"/>
+<pinref part="U3" gate="A" pin="FB"/>
+<wire x1="40.64" y1="-35.56" x2="55.88" y2="-35.56" width="0.1524" layer="91"/>
+<wire x1="55.88" y1="-35.56" x2="55.88" y2="7.62" width="0.1524" layer="91"/>
+<wire x1="55.88" y1="7.62" x2="68.58" y2="7.62" width="0.1524" layer="91"/>
+<junction x="68.58" y="7.62"/>
+</segment>
+</net>
 </nets>
 </sheet>
 </sheets>
@@ -5330,10 +5397,9 @@ Lower OVLO: 54.87</text>
 <approved hash="202,1,220.98,124.46,U1,MODE,,,,"/>
 <approved hash="104,1,-25.4,-40.64,U3,AGND,GND,,,"/>
 <approved hash="202,1,40.64,-50.8,U3,VAUX,,,,"/>
-<approved hash="104,1,40.64,-40.64,U3,VDD,N$6,,,"/>
 <approved hash="202,1,40.64,-33.02,U3,!RETRY,,,,"/>
 <approved hash="104,1,40.64,-27.94,U3,PWR,N$10,,,"/>
-<approved hash="204,1,40.64,-22.86,U3,PGD,,,,"/>
+<approved hash="104,1,40.64,-22.86,U3,PGD,N$12,,,"/>
 <approved hash="104,1,200.66,-33.02,D4,ANODE,N$8,,,"/>
 <approved hash="104,1,200.66,-38.1,D4,CATHODE,LED1,,,"/>
 <approved hash="104,1,208.28,-33.02,D5,ANODE,N$14,,,"/>
