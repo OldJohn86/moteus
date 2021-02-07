@@ -19,6 +19,13 @@ can be run like:
 python3 -m moteus_gui.tview --devices=1
 ```
 
+# For macs run tveiw #
+
+```
+python3 -m moteus_gui.tview --devices=1 --fdcanusb /dev/cu.usbmodemAAC8D32F1
+```
+# (AAC8D32F1: Serial Numember) #
+
 (Your pip may have installed a `tview` script into your path which you
 could also use).
 
