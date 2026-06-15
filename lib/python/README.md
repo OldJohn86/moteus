@@ -9,25 +9,7 @@ controllers.
 pip3 install moteus  # or 'moteus-pi3hat' on a pi3hat
 ```
 
-The following will report the status of a single controller at the
-default address of 1 at 1Hz while commanding it to hold the current
-position.
-
-```
-import asyncio
-import math
-import moteus
-
-async def main():
-    c = moteus.Controller()
-    await c.set_stop()  # in case there was a fault
-
-    while True:
-        print(await c.set_position(position=math.nan, query=True))
-        await asyncio.sleep(0.02)
-
-asyncio.run(main())
-```
+See a simple example of the API in use at: [simple.py](examples/simple.py)
 
 ## Theory ##
 
@@ -72,6 +54,9 @@ pass to a Transport's `cycle` method.
 This mechanism only improves performance for non-fdcanusb links, such
 as a pi3hat.
 
+An example use of this mechanism can be found at:
+[pi3hat_multiservo.py](examples/pi3hat_multiservo.py)
+
 ## Position mode commands ##
 
 `Controller.set_position` and `Controller.make_position` have
@@ -105,10 +90,10 @@ pr.kp_scale = moteus.F32
 pr.kd_scale = moteus.F32
 
 qr = moteus.QueryResolution()
-qr.mode = mp.INT8
-qr.position = mp.F32
-qr.velocity = mp.F32
-qr.torque = mp.F32
+qr.mode = moteus.INT8
+qr.position = moteus.F32
+qr.velocity = moteus.F32
+qr.torque = moteus.F32
 
 c = moteus.Controller(position_resolution=pr, query_resolution=qr)
 ```

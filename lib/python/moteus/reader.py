@@ -1,4 +1,4 @@
-# Copyright 2015-2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,48 +14,15 @@
 
 import collections
 import enum
+import keyword
 import struct
 
 
-_RESERVED_KEYWORDS = set([
-    'False',
-    'None',
-    'True',
-    'and',
-    'as',
-    'assert',
-    'break',
-    'class',
-    'continue',
-    'def',
-    'del',
-    'elif',
-    'else',
-    'except',
-    'finally',
-    'for',
-    'from',
-    'global',
-    'if',
-    'import',
-    'in',
-    'is',
-    'lambda',
-    'nonlocal',
-    'not',
-    'or',
-    'pass',
-    'raise',
-    'return',
-    'try',
-    'while',
-    'with',
-    'yield',
-])
-
-
 def _escape_python3_identifier(name):
-    if name in _RESERVED_KEYWORDS:
+    # Use the language-supplied keyword table rather than a frozen
+    # local list; otherwise schema fields named after newer keywords
+    # (`async`, `await`, ...) trip namedtuple's keyword check.
+    if keyword.iskeyword(name):
         return 'py_' + name
     return name
 
@@ -324,10 +291,10 @@ class EnumType:
         class Enum(enum.IntEnum):
             @classmethod
             def _missing_(cls, value):
-                return cls._create_pseudo_member_(value)
+                return cls._moteus_create_pseudo_member(value)
 
             @classmethod
-            def _create_pseudo_member_(cls, value):
+            def _moteus_create_pseudo_member(cls, value):
                 pseudo_member = cls._value2member_map_.get(value, None)
                 if pseudo_member is None:
                     new_member = int.__new__(cls, value)
@@ -336,6 +303,10 @@ class EnumType:
                     pseudo_member = cls._value2member_map_.setdefault(value, new_member)
                 return pseudo_member
 
+        if len(items) == 0:
+            # Newer versions of python (>= 3.11.6) require enum
+            # classes to have at least one member.
+            items = { '_' : -1 }
         self.enum_class = Enum(name, items)
 
     def read(self, data_stream):
@@ -452,7 +423,7 @@ TYPES = [
 ]
 
 
-_TYPES_FROM_BINARY = [x.from_binary if x else None for x in TYPES]
+_TYPES_FROM_BINARY = [x.from_binary if x else None for x in TYPES]  # type: ignore[attr-defined]
 
 
 class Type:

@@ -1,4 +1,4 @@
-// Copyright 2019-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,15 @@ namespace moteus {
 
 class FDCanMicroServer : public mjlib::multiplex::MicroDatagramServer {
  public:
+  // Fields in Header::flags
+  static constexpr uint32_t kBrsFlag = 0x01;
+  static constexpr uint32_t kFdcanFlag = 0x02;
+
   FDCanMicroServer(FDCan* can) : fdcan_(can) {}
+
+  void SetPrefix(uint32_t can_prefix) {
+    can_prefix_ = can_prefix;
+  }
 
   void AsyncRead(Header* header,
                  const mjlib::base::string_span& data,
@@ -35,19 +43,34 @@ class FDCanMicroServer : public mjlib::multiplex::MicroDatagramServer {
 
   void AsyncWrite(const Header& header,
                   const std::string_view& data,
+                  const Header& query_header,
                   const mjlib::micro::SizeCallback& callback) override {
+    // Enforce the contract advertised in properties().max_size; a
+    // larger payload would overrun buf_ and silently get sent as a
+    // zero-length frame (RoundUpDlc returns 0 above 64).
+    MJ_ASSERT(data.size() <= sizeof(buf_));
     const auto actual_dlc = RoundUpDlc(data.size());
     const uint32_t id =
-        ((header.source & 0xff) << 8) | (header.destination & 0xff);
+        ((header.source & 0xff) << 8) |
+        (header.destination & 0xff) |
+        (can_prefix_ << 16);
+
+    FDCan::SendOptions send_options;
+    send_options.bitrate_switch =
+        (query_header.flags & kBrsFlag) ?
+        FDCan::Override::kRequire : FDCan::Override::kDisable;
+    send_options.fdcan_frame =
+        ((query_header.flags & kFdcanFlag) == 0 && data.size() <= 8) ?
+        FDCan::Override::kDisable : FDCan::Override::kRequire;
 
     if (actual_dlc == data.size()) {
-      fdcan_->Send(id, data, {});
+      fdcan_->Send(id, data, send_options);
     } else {
       std::memcpy(buf_, data.data(), data.size());
       for (size_t i = data.size(); i < actual_dlc; i++) {
         buf_[i] = 0x50;
       }
-      fdcan_->Send(id, std::string_view(buf_, actual_dlc), {});
+      fdcan_->Send(id, std::string_view(buf_, actual_dlc), send_options);
     }
 
     callback(mjlib::micro::error_code(), data.size());
@@ -62,12 +85,31 @@ class FDCanMicroServer : public mjlib::multiplex::MicroDatagramServer {
   void Poll() {
     if (!current_read_header_) { return; }
 
+    const auto status = fdcan_->status();
+    if (status.BusOff) {
+      fdcan_->RecoverBusOff();
+      can_reset_count_++;
+    }
+
     const bool got_data = fdcan_->Poll(&fdcan_header_, current_read_data_);
     if (!got_data) { return; }
+
+    // We could check the prefix here as below:
+    //
+    //   const uint16_t prefix = (fdcan_header_.Identifier >> 16) & 0x1fff;
+    //   if (prefix != can_prefix_) { return; }
+    //
+    // However, we should be excluding prefix based on the hardware
+    // CAN filter, and having the check here would mask if the filter
+    // wasn't working.
 
     current_read_header_->destination = fdcan_header_.Identifier & 0xff;
     current_read_header_->source = (fdcan_header_.Identifier >> 8) & 0xff;
     current_read_header_->size = FDCan::ParseDlc(fdcan_header_.DataLength);
+    current_read_header_->flags = 0
+        | ((fdcan_header_.BitRateSwitch == FDCAN_BRS_ON) ? kBrsFlag : 0)
+        | ((fdcan_header_.FDFormat == FDCAN_FD_CAN) ? kFdcanFlag : 0)
+        ;
 
     auto copy = current_read_callback_;
     auto bytes = current_read_header_->size;
@@ -96,8 +138,13 @@ class FDCanMicroServer : public mjlib::multiplex::MicroDatagramServer {
     if (value <= 32) { return 32; }
     if (value <= 48) { return 48; }
     if (value <= 64) { return 64; }
+    // Past the 64-byte CAN-FD limit; callers must enforce
+    // properties().max_size before getting here.
+    MJ_ASSERT(false);
     return 0;
   }
+
+  uint32_t can_reset_count() const { return can_reset_count_; }
 
  private:
   FDCan* const fdcan_;
@@ -108,6 +155,8 @@ class FDCanMicroServer : public mjlib::multiplex::MicroDatagramServer {
 
   FDCAN_RxHeaderTypeDef fdcan_header_ = {};
   char buf_[64] = {};
+  uint32_t can_prefix_ = 0;
+  uint32_t can_reset_count_ = 0;
 };
 
 }

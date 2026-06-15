@@ -1,0 +1,180 @@
+# -*- python -*-
+
+# Copyright 2026 mjbots Robotic Systems, LLC.  info@mjbots.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Rust client libraries for moteus
+# See moteus-protocol/ for the no_std protocol crate
+# See moteus/ for the full client library with transports
+
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rustfmt_test")
+
+test_suite(
+    name = "host",
+    tests = [
+        "//lib/rust/moteus-protocol:moteus-protocol-test",
+        "//lib/rust/moteus-protocol:moteus-protocol-doc-test",
+        "//lib/rust/moteus:moteus-test",
+        "//lib/rust/moteus:moteus-doc-test",
+        "//lib/rust/moteus:moteus-doc-test-all-features",
+        "//lib/rust:clippy",
+        "//lib/rust:examples",
+        "//lib/rust:rustdoc",
+        "//lib/rust:fmt",
+    ],
+)
+
+# Clippy lint checks for all Rust crates.
+# Wrapped in sh_test so it runs as part of the test suite.
+sh_test(
+    name = "clippy",
+    srcs = ["clippy_test.sh"],
+    data = [
+        "//lib/rust/moteus-derive:moteus-derive-clippy",
+        "//lib/rust/moteus-protocol:moteus-protocol-clippy",
+        "//lib/rust/moteus:moteus-clippy",
+    ],
+    size = "small",
+)
+
+# Formatting check using the bazel Rust toolchain's rustfmt.
+rustfmt_test(
+    name = "fmt",
+    targets = [
+        "//lib/rust/moteus-derive",
+        "//lib/rust/moteus-protocol",
+        "//lib/rust/moteus:moteus",
+    ],
+    size = "small",
+)
+
+# Rustdoc lint checks (warnings as errors).
+sh_test(
+    name = "rustdoc",
+    srcs = ["clippy_test.sh"],
+    data = [
+        "//lib/rust/moteus-protocol:moteus-protocol-doc",
+        "//lib/rust/moteus:moteus-doc",
+    ],
+    size = "small",
+)
+
+# Ensure all example binaries build.
+# Wrapped in sh_test so they build as part of the test suite.
+sh_test(
+    name = "examples",
+    srcs = ["clippy_test.sh"],
+    data = [
+        ":bandwidth_test",
+        ":diagnostic_protocol",
+        ":discover",
+        ":gpio",
+        ":move_to",
+        ":multiservo",
+        ":protocol_only",
+        ":simple",
+    ],
+    size = "small",
+)
+
+# Example: Simple single-servo control
+rust_binary(
+    name = "simple",
+    srcs = ["//lib/rust/moteus:examples/simple.rs"],
+    edition = "2021",
+    deps = [
+        "//lib/rust/moteus:moteus_clap_tokio",
+        "@crate_index//:clap",
+        "@crate_index//:tokio",
+    ],
+)
+
+# Example: Protocol-only usage (no transport)
+rust_binary(
+    name = "protocol_only",
+    srcs = ["//lib/rust/moteus:examples/protocol_only.rs"],
+    edition = "2021",
+    deps = ["//lib/rust/moteus-protocol"],
+)
+
+# Example: Multi-servo control with discovery
+rust_binary(
+    name = "multiservo",
+    srcs = ["//lib/rust/moteus:examples/multiservo.rs"],
+    edition = "2021",
+    deps = [
+        "//lib/rust/moteus:moteus_clap_tokio",
+        "@crate_index//:clap",
+        "@crate_index//:tokio",
+    ],
+)
+
+# Example: Discover all connected controllers
+rust_binary(
+    name = "discover",
+    srcs = ["//lib/rust/moteus:examples/discover.rs"],
+    edition = "2021",
+    deps = [
+        "//lib/rust/moteus:moteus_clap",
+        "@crate_index//:clap",
+    ],
+)
+
+# Example: Bandwidth test for position/query loop
+rust_binary(
+    name = "bandwidth_test",
+    srcs = ["//lib/rust/moteus:examples/bandwidth_test.rs"],
+    edition = "2021",
+    deps = [
+        "//lib/rust/moteus:moteus_clap_tokio",
+        "@crate_index//:clap",
+        "@crate_index//:tokio",
+    ],
+)
+
+# Example: Diagnostic protocol for configuration and debugging
+rust_binary(
+    name = "diagnostic_protocol",
+    srcs = ["//lib/rust/moteus:examples/diagnostic_protocol.rs"],
+    edition = "2021",
+    deps = [
+        "//lib/rust/moteus:moteus_clap_tokio",
+        "@crate_index//:clap",
+        "@crate_index//:tokio",
+    ],
+)
+
+# Example: Coordinated multi-servo move_to
+rust_binary(
+    name = "move_to",
+    srcs = ["//lib/rust/moteus:examples/move_to.rs"],
+    edition = "2021",
+    deps = [
+        "//lib/rust/moteus:moteus_clap_tokio",
+        "@crate_index//:clap",
+        "@crate_index//:tokio",
+    ],
+)
+
+# Example: GPIO reading and writing
+rust_binary(
+    name = "gpio",
+    srcs = ["//lib/rust/moteus:examples/gpio.rs"],
+    edition = "2021",
+    deps = [
+        "//lib/rust/moteus:moteus_clap_tokio",
+        "@crate_index//:clap",
+        "@crate_index//:tokio",
+    ],
+)

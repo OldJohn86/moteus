@@ -1,4 +1,4 @@
-// Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,30 +14,26 @@
 
 #include "bldc_servo.h"
 
+#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <functional>
 
 #include "mbed.h"
-#include "serial_api_hal.h"
 
 #include "PeripheralPins.h"
 
 #include "mjlib/base/assert.h"
-#include "mjlib/base/limit.h"
 #include "mjlib/base/windowed_average.h"
 
+#include "fw/bldc_servo_control.h"
+#include "fw/bldc_servo_position.h"
 #include "fw/foc.h"
-#include "fw/math.h"
 #include "fw/moteus_hw.h"
-#include "fw/stm32_serial.h"
+#include "fw/stm32_dma.h"
+#include "fw/stm32g4_adc.h"
+#include "fw/thermistor.h"
 #include "fw/torque_model.h"
-
-#if defined(TARGET_STM32G4)
-#include "fw/stm32g4_async_uart.h"
-#else
-#error "Unknown target"
-#endif
 
 #ifdef wait_us
 #undef wait_us
@@ -48,135 +44,32 @@ namespace micro = mjlib::micro;
 namespace moteus {
 
 namespace {
-constexpr int kAdcPrescale = 6;
 
-#if defined(TARGET_STM32G4)
-using HardwareUart = Stm32G4AsyncUart;
-#else
-#error "Unknown target"
-#endif
-
-
-using mjlib::base::Limit;
-
-float Threshold(float, float, float) MOTEUS_CCM_ATTRIBUTE;
-
-float Threshold(float value, float lower, float upper) {
-  if (value > lower && value < upper) { return 0.0f; }
-  return value;
+RateConfig MakeRateConfig(int pwm_rate_hz_in, float current_sample_time) {
+  const int board_min_pwm_rate_hz =
+      (g_measured_hw_family == 0 &&
+       g_measured_hw_rev == 2) ? 60000 :
+      15000;
+  return RateConfig(pwm_rate_hz_in, board_min_pwm_rate_hz,
+                    current_sample_time);
 }
-
-float Offset(float minval, float blend, float val) MOTEUS_CCM_ATTRIBUTE;
-
-float Offset(float minval, float blend, float val) {
-  if (val == 0.0f) { return 0.0f; }
-  if (std::abs(val) >= blend) {
-    return (val < 0.0f) ? (-minval + val) : (minval + val);
-  }
-  const float ratio = val / blend;
-  return ratio * (blend + minval);
-}
-
-// From make_thermistor_table.py
-constexpr float g_thermistor_lookup[] = {
-  -74.17f, // 0
-  -11.36f, // 128
-  1.53f, // 256
-  9.97f, // 384
-  16.51f, // 512
-  21.98f, // 640
-  26.79f, // 768
-  31.15f, // 896
-  35.19f, // 1024
-  39.00f, // 1152
-  42.65f, // 1280
-  46.18f, // 1408
-  49.64f, // 1536
-  53.05f, // 1664
-  56.45f, // 1792
-  59.87f, // 1920
-  63.33f, // 2048
-  66.87f, // 2176
-  70.51f, // 2304
-  74.29f, // 2432
-  78.25f, // 2560
-  82.44f, // 2688
-  86.92f, // 2816
-  91.78f, // 2944
-  97.13f, // 3072
-  103.13f, // 3200
-  110.01f, // 3328
-  118.16f, // 3456
-  128.23f, // 3584
-  141.49f, // 3712
-  161.02f, // 3840
-  197.66f, // 3968
-};
-
-template <typename Array>
-int MapConfig(const Array& array, int value) {
-  static_assert(sizeof(array) > 0);
-  int result = 0;
-  for (const auto& item : array) {
-    if (value <= item) { return result; }
-    result++;
-  }
-  // Never return past the end.
-  return result - 1;
-}
-
-#if MOTEUS_HW_REV >= 3
-// r4.1 and above have more DC-link capacitance and can run at the
-// slower 40kHz PWM frequency.
-constexpr int kIntRateHz = 40000;
-constexpr int kPwmRateHz = 40000;
-#elif MOTEUS_HW_REV <= 2
-constexpr int kIntRateHz = 30000;
-constexpr int kPwmRateHz = 60000;
-#endif
-constexpr int kInterruptDivisor = kPwmRateHz / kIntRateHz;
-static_assert(kPwmRateHz % kIntRateHz == 0);
-
-// This is used to determine the maximum allowable PWM value so that
-// the current sampling is guaranteed to occur while the FETs are
-// still low.  It was calibrated using the scope and trial and error.
-//
-// The primary test is a high torque pulse with absolute position
-// limits in place of +-1.0.  Something like "d pos nan 0 1 p0 d0 f1".
-// This all but ensures the current controller will saturate.
-//
-// As of 2020-09-13, 0.98 was the highest value that failed.
-constexpr float kCurrentSampleTime = 1.03e-6f;
-
-constexpr float kMinPwm = kCurrentSampleTime / (0.5f / static_cast<float>(kPwmRateHz));
-constexpr float kMaxPwm = 1.0f - kMinPwm;
-
-constexpr float kRateHz = kIntRateHz;
-constexpr float kPeriodS = 1.0f / kRateHz;
 
 constexpr int kCalibrateCount = 256;
-
-// The maximum amount the absolute encoder can change in one cycle
-// without triggering a fault.  Measured as a fraction of a uint16_t
-// and corresponds to roughly 28krpm, which is the limit of the AS5047
-// encoder.
-//  28000 / 60 = 467 Hz
-//  467 Hz * 65536 / kIntRate ~= 763
-constexpr int16_t kMaxPositionDelta = 28000 / 60 * 65536 / kIntRateHz;
-
-constexpr float kDefaultTorqueConstant = 0.1f;
-constexpr float kMaxUnconfiguredCurrent = 5.0f;
 
 constexpr int kMaxVelocityFilter = 256;
 
 IRQn_Type FindUpdateIrq(TIM_TypeDef* timer) {
 #if defined(TARGET_STM32G4)
-  if (timer == TIM2) {
+  if (timer == TIM1) {
+    return TIM1_UP_TIM16_IRQn;
+  } else if (timer == TIM2) {
     return TIM2_IRQn;
   } else if (timer == TIM3) {
     return TIM3_IRQn;
   } else if (timer == TIM4) {
     return TIM4_IRQn;
+  } else if (timer == TIM5) {
+    return TIM5_IRQn;
   }
   MJ_ASSERT(false);
   return TIM2_IRQn;
@@ -211,12 +104,17 @@ uint32_t FindSqr(PinName pin) {
 }
 
 /// Read a digital input, but without configuring it in any way.
-class DigitalMonitor {
+class PhaseMonitors {
  public:
-  DigitalMonitor(PinName pin) {
-    const uint32_t port_index = STM_PORT(pin);
+  PhaseMonitors(PinName pin1, PinName pin2, PinName pin3) {
+    const uint32_t port_index1 = STM_PORT(pin1);
+    const uint32_t port_index2 = STM_PORT(pin3);
+    const uint32_t port_index3 = STM_PORT(pin3);
+    MJ_ASSERT(port_index1 == port_index2);
+    MJ_ASSERT(port_index2 == port_index3);
+
     GPIO_TypeDef* gpio = reinterpret_cast<GPIO_TypeDef*>([&]() {
-      switch (port_index) {
+      switch (port_index1) {
         case PortA: return GPIOA_BASE;
         case PortB: return GPIOB_BASE;
         case PortC: return GPIOC_BASE;
@@ -228,7 +126,9 @@ class DigitalMonitor {
       return GPIOA_BASE;
       }());
     reg_in_ = &gpio->IDR;
-    mask_ = static_cast<uint32_t>(1 << (static_cast<uint32_t>(pin) & 0xf));
+    mask_ = static_cast<uint32_t>(1 << (static_cast<uint32_t>(pin1) & 0xf)) |
+        static_cast<uint32_t>(1 << (static_cast<uint32_t>(pin2) & 0xf)) |
+        static_cast<uint32_t>(1 << (static_cast<uint32_t>(pin3) & 0xf));
   }
 
   bool read() {
@@ -239,26 +139,31 @@ class DigitalMonitor {
   volatile uint32_t* reg_in_ = nullptr;
   uint32_t mask_ = 0;
 };
+
 }
 
-class BldcServo::Impl {
+class BldcServo::Impl : public BldcServoControl<BldcServo::Impl> {
  public:
   Impl(micro::PersistentConfig* persistent_config,
        micro::TelemetryManager* telemetry_manager,
        MillisecondTimer* millisecond_timer,
-       AS5047* position_sensor,
        MotorDriver* motor_driver,
+       AuxADC* aux_adc,
+       AuxPort* aux1_port,
+       AuxPort* aux2_port,
+       MotorPosition* motor_position,
        const Options& options)
       : options_(options),
         ms_timer_(millisecond_timer),
-        position_sensor_(position_sensor),
         motor_driver_(motor_driver),
+        aux_adc_(aux_adc),
+        aux1_port_(aux1_port),
+        aux2_port_(aux2_port),
+        motor_position_(motor_position),
         pwm1_(options.pwm1),
         pwm2_(options.pwm2),
         pwm3_(options.pwm3),
-        monitor1_(options.pwm1),
-        monitor2_(options.pwm2),
-        monitor3_(options.pwm3),
+        phase_monitors_(options.pwm1, options.pwm2, options.pwm3),
         current1_(options.current1),
         current2_(options.current2),
         current3_(options.current3),
@@ -269,20 +174,11 @@ class BldcServo::Impl {
         msense_(options.msense),
         msense_sqr_(FindSqr(options.msense)),
         debug_dac_(options.debug_dac),
+#ifdef MOTEUS_DEBUG_OUT
         debug_out_(options.debug_out),
-        debug_out2_(options.debug_out2),
-        debug_serial_([&]() {
-            Stm32Serial::Options d_options;
-            d_options.tx = options.debug_uart_out;
-            d_options.baud_rate = 5450000;
-            return d_options;
-          }()),
-        vsense_adc_scale_((g_measured_hw_rev < 6) ?
-                          MOTEUS_VSENSE_ADC_SCALE_PRE6 :
-                          MOTEUS_VSENSE_ADC_SCALE_POST6) {
+#endif
+        vsense_adc_scale_(g_hw_pins.vsense_adc_scale) {
 
-    persistent_config->Register("motor", &motor_,
-                                std::bind(&Impl::UpdateConfig, this));
     persistent_config->Register("servo", &config_,
                                 std::bind(&Impl::UpdateConfig, this));
     persistent_config->Register("servopos", &position_config_,
@@ -290,6 +186,14 @@ class BldcServo::Impl {
     telemetry_manager->Register("servo_stats", &status_);
     telemetry_manager->Register("servo_cmd", &telemetry_data_);
     telemetry_manager->Register("servo_control", &control_);
+
+    // The motor driver's csa_settling_time() depends on its
+    // csa_gain config, which is registered separately as
+    // "drv8323_conf".  Have the driver re-trigger UpdateConfig
+    // whenever its config changes so rate_config_'s min_pwm /
+    // max_pwm track csa_gain live.
+    motor_driver_->SetConfigUpdateCallback(
+        std::bind(&Impl::UpdateConfig, this));
 
     UpdateConfig();
 
@@ -299,7 +203,16 @@ class BldcServo::Impl {
 
   void Start() {
     ConfigureADC();
-    ConfigurePwmTimer();
+    ConfigureLPTIM1();
+    ConfigureDmaLptimTrigger();
+    ConfigurePwmIrq();
+
+    if (options_.debug_uart_out != NC) {
+      const auto uart = pinmap_peripheral(
+          options_.debug_uart_out, PinMap_UART_TX);
+      debug_uart_ = onboard_debug_uart_ =
+          reinterpret_cast<USART_TypeDef*>(uart);
+    }
   }
 
   ~Impl() {
@@ -307,33 +220,31 @@ class BldcServo::Impl {
   }
 
   void Command(const CommandData& data) {
-    MJ_ASSERT(data.mode != kFault);
-    MJ_ASSERT(data.mode != kEnabling);
-    MJ_ASSERT(data.mode != kCalibrating);
-    MJ_ASSERT(data.mode != kCalibrationComplete);
+    if (data.mode == kFault ||
+        data.mode == kEnabling ||
+        data.mode == kCalibrating ||
+        data.mode == kCalibrationComplete) {
+      // These are not valid states to command.  Ignore the command
+      // entirely.
+      return;
+    }
 
     // Actually setting values will happen in the interrupt routine,
     // so we need to update this atomically.
     CommandData* next = next_data_;
     *next = data;
 
-    // If we have a case where the position is left unspecified, but
-    // we have a velocity and stop condition, then we pick the sign of
-    // the velocity so that we actually move.
-    if (std::isnan(next->position) &&
-        !std::isnan(next->stop_position) &&
-        !std::isnan(next->velocity) &&
-        next->velocity != 0.0f) {
-      next->velocity = std::abs(next->velocity) *
-          ((next->stop_position > status_.unwrapped_position) ?
-           1.0f : -1.0f);
-    }
-
-    if (next->timeout_s == 0.0f) {
-      next->timeout_s = config_.default_timeout_s;
-    }
+    // Apply defaults, transform positions, and validate the command.
+    errc err = PrepareCommand(next);
 
     telemetry_data_ = *next;
+
+    if (err != errc::kSuccess) {
+      volatile auto* mode_volatile = &status_.mode;
+      volatile auto* fault_volatile = &status_.fault;
+      *fault_volatile = err;
+      *mode_volatile = kFault;
+    }
 
     std::swap(current_data_, next_data_);
   }
@@ -341,10 +252,21 @@ class BldcServo::Impl {
   const Status& status() const { return status_; }
   const Config& config() const { return config_; }
   const Control& control() const { return control_; }
-  const Motor& motor() const { return motor_; }
+  const AuxPort::Status& aux1() const { return *aux1_port_->status(); }
+  const AuxPort::Status& aux2() const { return *aux2_port_->status(); }
+  const MotorPosition::Status& motor_position() const {
+    return motor_position_->status();
+  }
+  MotorPosition::Config* motor_position_config() {
+    return motor_position_->config();
+  }
+
+  const MotorPosition::Config* motor_position_config() const {
+    return motor_position_->config();
+  }
 
   bool is_torque_constant_configured() const {
-    return motor_.v_per_hz != 0.0f;
+    return motor_.Kv != 0.0f;
   }
 
   float current_to_torque(float current) const MOTEUS_CCM_ATTRIBUTE {
@@ -355,48 +277,194 @@ class BldcServo::Impl {
     return model.current_to_torque(current);
   }
 
-  float torque_to_current(float torque) const MOTEUS_CCM_ATTRIBUTE {
-    TorqueModel model(torque_constant_,
-                      motor_.rotation_current_cutoff_A,
-                      motor_.rotation_current_scale,
-                      motor_.rotation_torque_scale);
-    return model.torque_to_current(torque);
-  }
-
   void UpdateConfig() {
-    const float kv = 0.5f * 60.0f / motor_.v_per_hz;
+    // The actual sample time is the max of two unrelated
+    // contributions: the ISR/ADC chain floor (kIsrSampleTime) and
+    // the gate driver's CSA settling time at the configured gain.
+    rate_config_ = MakeRateConfig(
+        config_.pwm_rate_hz,
+        std::max(kIsrSampleTime, motor_driver_->csa_settling_time()));
+    // Update the saved config to match our limits.
+    config_.pwm_rate_hz = rate_config_.pwm_rate_hz;
 
-    // I have no idea why this fudge is necessary, but it seems to be
-    // consistent across every motor I have tried.
-    constexpr float kFudge = 0.78;
+    flux_brake_min_voltage_ =
+        config_.max_voltage - config_.flux_brake_margin_voltage;
+
+    derate_temperature_ =
+        config_.fault_temperature - config_.temperature_margin;
+    motor_derate_temperature_ =
+        config_.motor_fault_temperature - config_.motor_temperature_margin;
+
+    velocity_filter_ = ExponentialFilter(rate_config_.pwm_rate_hz, 100.0f);
+    temperature_filter_ = ExponentialFilter(rate_config_.pwm_rate_hz, 100.0f);
+    InitControlFilters(rate_config_.pwm_rate_hz);
+
+    // Ensure that our maximum current stays within the range that can
+    // be sensed.
+    constexpr float kSensableCurrentMargin = 0.95f;
+    const float max_sensable_current_A =
+        kSensableCurrentMargin *
+        motor_driver_->max_sense_V() / config_.current_sense_ohm;
+    config_.max_current_A = std::min(config_.max_current_A,
+                                     max_sensable_current_A);
+
+    ConfigurePwmTimer();
+
+    // From https://things-in-motion.blogspot.com/2018/12/how-to-estimate-torque-of-bldc-pmsm.html
+    constexpr float kTorqueFactor =
+        (3.0f / 2.0f) * (1.0f / kSqrt3) * (60.0f / k2Pi);
 
     torque_constant_ =
         is_torque_constant_configured() ?
-        kFudge * 60.0f / (2.0f * kPi * kv) :
+        kTorqueFactor / motor_.Kv :
         kDefaultTorqueConstant;
 
-    position_constant_ = motor_.poles / 2;
+    adc_scale_ = 3.3f / (4096.0f *
+                         config_.current_sense_ohm *
+                         motor_driver_->i_gain());
 
-    adc_scale_ = 3.3f / (4096.0f * MOTEUS_CURRENT_SENSE_OHM * config_.i_gain);
+    pwm_derate_ = (static_cast<float>(config_.pwm_rate_hz) / 30000.0f);
 
-    velocity_filter_ = {std::min<size_t>(
-          kMaxVelocityFilter, config_.velocity_filter_length)};
+    fet_thermistor_.Reset(47000.0f);
+    motor_thermistor_.Reset(config_.motor_thermistor_ohm);
+    motor_position_->SetRate(rate_config_.period_s);
 
-    motor_scale16_ = 65536.0f / motor_.unwrapped_position_scale;
+    UpdateDerivedMotorConstants();
+    UpdateFieldWeakeningIdChar();
   }
 
   void PollMillisecond() {
-    volatile Mode* mode_volatile = &status_.mode;
+    volatile auto* mode_volatile = &status_.mode;
+    volatile auto* fault_volatile = &status_.fault;
     Mode mode = *mode_volatile;
     if (mode == kEnabling) {
-      motor_driver_->Enable(true);
-      *mode_volatile = kCalibrating;
+      const auto enable_result = motor_driver_->StartEnable(true);
+      switch (enable_result) {
+        case MotorDriver::kEnabled: {
+          *mode_volatile = kCalibrating;
+          break;
+        }
+        case MotorDriver::kCalibrateFailed: {
+          *fault_volatile = errc::kDriverEnableFault;
+          *mode_volatile = kFault;
+          break;
+        }
+        case MotorDriver::kDisabled:
+        case MotorDriver::kEnabling1:
+        case MotorDriver::kEnabling2:
+        case MotorDriver::kEnabling3: {
+          // Not done yet.
+          break;
+        }
+      }
     }
-    startup_count_++;
+
+    // Because the aux ports can be configured after us, we just poll
+    // periodically to see if we need to point our debug uart
+    // somewhere different.
+    auto* desired_debug_uart =
+        [&]() {
+          if (aux1_port_->debug_uart()) {
+            return aux1_port_->debug_uart();
+          } else if (aux2_port_->debug_uart()) {
+            return aux2_port_->debug_uart();
+          } else {
+            return onboard_debug_uart_;
+          }
+        }();
+    if (desired_debug_uart != debug_uart_) {
+      debug_uart_ = desired_debug_uart;
+    }
+
+    if (motor_position_->status().epoch !=
+        main_motor_position_epoch_) {
+      main_motor_position_epoch_ = motor_position_->status().epoch;
+      UpdateConfig();
+    }
+  }
+
+  void SetOutputPositionNearest(float position) {
+    // The required function can only officially be called in an ISR
+    // context.  To simplify things, we just disable IRQs to
+    // deconflict.
+    __disable_irq();
+    motor_position_->ISR_SetOutputPositionNearest(position);
+    __enable_irq();
+  }
+
+  void SetOutputPosition(float position) {
+    __disable_irq();
+    motor_position_->ISR_SetOutputPosition(position);
+    __enable_irq();
+  }
+
+  void RequireReindex() {
+    __disable_irq();
+    motor_position_->ISR_RequireReindex();
+    __enable_irq();
+  }
+
+  void RecapturePositionVelocity() {
+    __disable_irq();
+
+    status_.pid_position.Clear();
+    status_.control_position_raw = {};
+    status_.control_position = std::numeric_limits<float>::quiet_NaN();
+    status_.control_velocity = {};
+    status_.control_acceleration = {};
+
+    __enable_irq();
+  }
+
+  void Fault(moteus::errc fault_code) {
+    __disable_irq();
+
+    if (status_.mode != kFault) {
+      status_.mode = kFault;
+      status_.fault = fault_code;
+    }
+
+    __enable_irq();
   }
 
  private:
+  friend class BldcServoControl<Impl>;
+
+  void ConfigurePwmIrq() {
+    // NOTE: We don't use micro::CallbackTable here because we need the
+    // absolute minimum latency possible.
+    const auto irqn = FindUpdateIrq(timer_);
+    NVIC_SetVector(irqn, reinterpret_cast<uint32_t>(&Impl::GlobalInterrupt));
+    HAL_NVIC_SetPriority(irqn, 0, 0);
+
+    // Our handler is broken up into two parts.  One which runs on the
+    // timer interrupt and is the highest priority.  It makes sure the
+    // current is sampled as close to the center of the PWM waveform
+    // as possible.
+    //
+    // Then, once that is done, we trigger the PendSV interrupt to do
+    // the remainder of the processing at a lower interrupt priority
+    // level.  That way things like soft-GPIO handling interrupts
+    // (quadrature, step-dir), can pre-empt the rest.
+    NVIC_SetVector(PendSV_IRQn, reinterpret_cast<uint32_t>(&Impl::GlobalPendSv));
+    // Set to the lowest priority we are using.
+    HAL_NVIC_SetPriority(PendSV_IRQn, 6, 0);
+
+    NVIC_EnableIRQ(PendSV_IRQn);
+    pwm_irqn_ = irqn;
+    NVIC_EnableIRQ(irqn);
+  }
+
   void ConfigurePwmTimer() {
+    // Disable PWM interrupt during reconfiguration to prevent ISR from
+    // running while timer/DMA chain is in an inconsistent state.
+    // Only do this if interrupts have been configured (pwm_irqn_ is set).
+    const bool irq_was_enabled = (pwm_irqn_ != IRQn_Type{}) &&
+                                  NVIC_GetEnableIRQ(pwm_irqn_);
+    if (irq_was_enabled) {
+      NVIC_DisableIRQ(pwm_irqn_);
+    }
+
     const auto pwm1_timer = pinmap_peripheral(options_.pwm1, PinMap_PWM);
     const auto pwm2_timer = pinmap_peripheral(options_.pwm2, PinMap_PWM);
     const auto pwm3_timer = pinmap_peripheral(options_.pwm3, PinMap_PWM);
@@ -429,27 +497,36 @@ class BldcServo::Impl {
         // ARR register is buffered.
         TIM_CR1_ARPE;
 
-    // Update once per up/down of the counter.
-    timer_->RCR |= 0x01;
+    // Enable DMA request on CC4 event. The DMA will trigger LPTIM1
+    // which then triggers all ADCs simultaneously.
+    // Using CC4 instead of Update because in center-aligned mode 2 (CMS=2),
+    // the CC4 flag is set only when counting down, giving us exactly one
+    // DMA trigger per PWM cycle. Update events would trigger twice per cycle.
+    timer_->DIER |= TIM_DIER_CC4DE;
 
     // Set up PWM.
 
     timer_->PSC = 0; // No prescaler.
-    pwm_counts_ = HAL_RCC_GetPCLK1Freq() * 2 / (2 * kPwmRateHz);
+    pwm_counts_ = HAL_RCC_GetPCLK1Freq() * 2 / (2 * rate_config_.pwm_rate_hz);
     timer_->ARR = pwm_counts_;
 
-    // NOTE: We don't use micro::CallbackTable here because we need the
-    // absolute minimum latency possible.
-    const auto irqn = FindUpdateIrq(timer_);
-    NVIC_SetVector(irqn, reinterpret_cast<uint32_t>(&Impl::GlobalInterrupt));
-    HAL_NVIC_SetPriority(irqn, 0, 0);
-    NVIC_EnableIRQ(irqn);
+    // Set CCR4 to trigger at the top of the count (when counting
+    // down).  Current sensing requires sampling when low-side
+    // switches are ON, which happens at the peak of the PWM cycle
+    // (counter near ARR).  We set CCR4 = ARR so the DMA triggers
+    // right at the peak when counting down.
+    timer_->CCR4 = pwm_counts_;
 
     // Reinitialize the counter and update all registers.
     timer_->EGR |= TIM_EGR_UG;
 
     // Finally, enable the timer.
     timer_->CR1 |= TIM_CR1_CEN;
+
+    // Re-enable PWM interrupt now that reconfiguration is complete.
+    if (irq_was_enabled) {
+      NVIC_EnableIRQ(pwm_irqn_);
+    }
   }
 
   void ConfigureADC() {
@@ -477,135 +554,85 @@ class BldcServo::Impl {
     __HAL_RCC_ADC12_CLK_ENABLE();
     __HAL_RCC_ADC345_CLK_ENABLE();
 
-    auto disable_adc = [](auto* adc) {
-      if (adc->CR & ADC_CR_ADEN) {
-        adc->CR |= ADC_CR_ADDIS;
-        while (adc->CR & ADC_CR_ADEN);
-      }
-    };
-
     // First, we have to disable everything to ensure we are in a
     // known state.
-    disable_adc(ADC1);
-    disable_adc(ADC2);
-    disable_adc(ADC3);
-    disable_adc(ADC4);
-    disable_adc(ADC5);
+    DisableAdc(ADC1);
+    DisableAdc(ADC2);
+    DisableAdc(ADC3);
+    DisableAdc(ADC4);
+    DisableAdc(ADC5);
 
-    // The prescaler must be at least 6x to be able to accurately read
-    // across all channels.  If it is too low, you'll see errors that
-    // look like quantization, but not in a particularly uniform way
-    // and not consistently across each of the channels.
-    auto map_adc_prescale = [](int prescale) {
-      if (prescale == 1) { return 0; }
-      if (prescale == 2) { return 1; }
-      if (prescale == 4) { return 2; }
-      if (prescale == 6) { return 3; }
-      if (prescale == 8) { return 4; }
-      if (prescale == 10) { return 5; }
-      if (prescale == 12) { return 6; }
-      if (prescale == 16) { return 7; }
-      if (prescale == 32) { return 8; }
-      if (prescale == 64) { return 9; }
-      if (prescale == 128) { return 10; }
-      if (prescale == 256) { return 11; }
-      MJ_ASSERT(false);
-      return 0;
-    };
-
+    // Per STM32G4 errata ES0430 section 2.7.11, ADC instances can impact
+    // each other's accuracy when conversions are concurrent. To avoid this,
+    // all ADCs must use the same clock configuration and be triggered
+    // simultaneously by the same timer. We use synchronous AHB/2 mode
+    // and ensure each ADC is started in an exact phase relationship to
+    // the global cycle counter.
     ADC12_COMMON->CCR =
-        (map_adc_prescale(kAdcPrescale) << ADC_CCR_PRESC_Pos);
+        (2 << ADC_CCR_CKMODE_Pos) |  // synchronous AHB/2
+        (1 << ADC_CCR_DUAL_Pos); // dual mode, regular + injected
     ADC345_COMMON->CCR =
-        (map_adc_prescale(kAdcPrescale) << ADC_CCR_PRESC_Pos);
+        (2 << ADC_CCR_CKMODE_Pos) |  // synchronous AHB/2
+        (1 << ADC_CCR_DUAL_Pos); // dual mode, regular + injected
 
-    // 20.4.6: ADC Deep power-down mode startup procedure
-    ADC1->CR &= ~ADC_CR_DEEPPWD;
-    ADC2->CR &= ~ADC_CR_DEEPPWD;
-    ADC3->CR &= ~ADC_CR_DEEPPWD;
-    ADC4->CR &= ~ADC_CR_DEEPPWD;
-    ADC5->CR &= ~ADC_CR_DEEPPWD;
+    constexpr int kAdcPrescale = 2;  // from the CKMODE above
 
-    ADC1->CR |= ADC_CR_ADVREGEN;
-    ADC2->CR |= ADC_CR_ADVREGEN;
-    ADC3->CR |= ADC_CR_ADVREGEN;
-    ADC4->CR |= ADC_CR_ADVREGEN;
-    ADC5->CR |= ADC_CR_ADVREGEN;
+    // Enable all ADCs with LPTIM1 external trigger for synchronized sampling.
+    // Per STM32G4 errata ES0430 section 2.7.11, all ADCs must be triggered
+    // simultaneously to avoid accuracy issues between ADC instances.
+    // LPTIM1 is triggered via DMA from the PWM timer update event.
+    EnableAdc(ms_timer_, ADC1, kAdcPrescale, 0, AdcTriggerMode::kLptim1);
+    EnableAdc(ms_timer_, ADC2, kAdcPrescale, 0, AdcTriggerMode::kLptim1);
+    EnableAdc(ms_timer_, ADC3, kAdcPrescale, 0, AdcTriggerMode::kLptim1);
+    EnableAdc(ms_timer_, ADC4, kAdcPrescale, 0, AdcTriggerMode::kLptim1);
+    EnableAdc(ms_timer_, ADC5, kAdcPrescale, 0, AdcTriggerMode::kLptim1);
 
-    // tADCREG_S = 20us per STM32G474xB datasheet
-    ms_timer_->wait_us(20);
-
-    // 20.4.8: Calibration
-    ADC1->CR |= ADC_CR_ADCAL;
-    ADC2->CR |= ADC_CR_ADCAL;
-    ADC3->CR |= ADC_CR_ADCAL;
-    ADC4->CR |= ADC_CR_ADCAL;
-    ADC5->CR |= ADC_CR_ADCAL;
-
-    while ((ADC1->CR & ADC_CR_ADCAL) ||
-           (ADC2->CR & ADC_CR_ADCAL) ||
-           (ADC3->CR & ADC_CR_ADCAL) ||
-           (ADC4->CR & ADC_CR_ADCAL) ||
-           (ADC5->CR & ADC_CR_ADCAL));
-
-    ms_timer_->wait_us(1);
-
-    // 20.4.9: Software procedure to enable the ADC
-    ADC1->ISR |= ADC_ISR_ADRDY;
-    ADC2->ISR |= ADC_ISR_ADRDY;
-    ADC3->ISR |= ADC_ISR_ADRDY;
-    ADC4->ISR |= ADC_ISR_ADRDY;
-    ADC5->ISR |= ADC_ISR_ADRDY;
-
-    ADC1->CR |= ADC_CR_ADEN;
-    ADC2->CR |= ADC_CR_ADEN;
-    ADC3->CR |= ADC_CR_ADEN;
-    ADC4->CR |= ADC_CR_ADEN;
-    ADC5->CR |= ADC_CR_ADEN;
-
-    while (!(ADC1->ISR & ADC_ISR_ADRDY) ||
-           !(ADC2->ISR & ADC_ISR_ADRDY) ||
-           !(ADC3->ISR & ADC_ISR_ADRDY) ||
-           !(ADC4->ISR & ADC_ISR_ADRDY) ||
-           !(ADC5->ISR & ADC_ISR_ADRDY));
-
-    ADC1->ISR |= ADC_ISR_ADRDY;
-    ADC2->ISR |= ADC_ISR_ADRDY;
-    ADC3->ISR |= ADC_ISR_ADRDY;
-    ADC4->ISR |= ADC_ISR_ADRDY;
-    ADC5->ISR |= ADC_ISR_ADRDY;
-
-    ADC1->CFGR &= ~(ADC_CFGR_CONT);
-    ADC2->CFGR &= ~(ADC_CFGR_CONT);
-    ADC3->CFGR &= ~(ADC_CFGR_CONT);
-    ADC4->CFGR &= ~(ADC_CFGR_CONT);
-    ADC5->CFGR &= ~(ADC_CFGR_CONT);
-
-    ADC1->SQR1 =
-        (0 << ADC_SQR1_L_Pos) |  // length 1
-        FindSqr(options_.current2) << ADC_SQR1_SQ1_Pos;
-    ADC2->SQR1 =
-        (0 << ADC_SQR1_L_Pos) |  // length 1
-        FindSqr(options_.current3) << ADC_SQR1_SQ1_Pos;
-    ADC3->SQR1 =
-        (0 << ADC_SQR1_L_Pos) |  // length 1
-        FindSqr(options_.current1) << ADC_SQR1_SQ1_Pos;
-    if (hw_rev_ <= 4) {
+    if (family0_) {
+      adc1_sqr_ = ADC1->SQR1 =
+          (0 << ADC_SQR1_L_Pos) |  // length 1
+          FindSqr(options_.current2) << ADC_SQR1_SQ1_Pos;
+      adc2_sqr_ = ADC2->SQR1 =
+          (0 << ADC_SQR1_L_Pos) |  // length 1
+          FindSqr(options_.current3) << ADC_SQR1_SQ1_Pos;
+      adc3_sqr_ = ADC3->SQR1 =
+          (0 << ADC_SQR1_L_Pos) |  // length 1
+          FindSqr(options_.current1) << ADC_SQR1_SQ1_Pos;
+    } else {
+      adc1_sqr_ = ADC1->SQR1 =
+          (0 << ADC_SQR1_L_Pos) |  // length 1
+          FindSqr(options_.current1) << ADC_SQR1_SQ1_Pos;
+      adc2_sqr_ = ADC2->SQR1 =
+          (0 << ADC_SQR1_L_Pos) |  // length 1
+          FindSqr(options_.current2) << ADC_SQR1_SQ1_Pos;
+      adc3_sqr_ = ADC3->SQR1 =
+          (0 << ADC_SQR1_L_Pos) |  // length 1
+          FindSqr(options_.current3) << ADC_SQR1_SQ1_Pos;
+    }
+    if (family0_rev4_and_older_) {
       // For version <=4, we sample the motor temperature and the
       // battery sense first.
-      ADC4->SQR1 =
+      adc4_sqr_ = ADC4->SQR1 =
           (0 << ADC_SQR1_L_Pos) |  // length 1
           (msense_sqr_ << ADC_SQR1_SQ1_Pos);
       ADC5->SQR1 =
           (0 << ADC_SQR1_L_Pos) |  // length 1
           (vsense_sqr_ << ADC_SQR1_SQ1_Pos);
-    } else if (hw_rev_ >= 5) {
+    } else if (g_measured_hw_family == 0) {
       // For 5+, ADC4 always stays on the battery.
-      ADC4->SQR1 =
+      adc4_sqr_ = ADC4->SQR1 =
           (0 << ADC_SQR1_L_Pos) |  // length 1
           (vsense_sqr_ << ADC_SQR1_SQ1_Pos);
       ADC5->SQR1 =
           (0 << ADC_SQR1_L_Pos) |  // length 1
           (tsense_sqr_ << ADC_SQR1_SQ1_Pos);
+    } else if (family1or2or3_) {
+      // For family 1, ADC4 always stays on temperature sense.
+      adc4_sqr_ = ADC4->SQR1 =
+          (0 << ADC_SQR1_L_Pos) |  // length 1
+          (tsense_sqr_ << ADC_SQR1_SQ1_Pos);
+      ADC5->SQR1 =
+          (0 << ADC_SQR1_L_Pos) |  // length 1
+          (vsense_sqr_ << ADC_SQR1_SQ1_Pos);
     }
 
     ADC1->SMPR1 = all_cur_cycles;
@@ -621,8 +648,105 @@ class BldcServo::Impl {
     ADC5->SMPR2 = all_aux_cycles;
   }
 
+  // Get the DMAMUX request input number for the given timer's CH4 event.
+  // Using CH4 instead of Update because in center-aligned mode 2, the CC4
+  // flag is set only when counting down, giving us exactly one DMA trigger
+  // per PWM cycle. Update events would trigger on both edges.
+  static uint32_t GetTimerCh4DmamuxInput(TIM_TypeDef* timer) {
+    // From STM32G4 reference manual Table 93 (DMAMUX request MUX inputs)
+    if (timer == TIM1) return 45;   // TIM1_CH4
+    if (timer == TIM2) return 59;   // TIM2_CH4
+    if (timer == TIM3) return 64;   // TIM3_CH4
+    if (timer == TIM4) return 70;   // TIM4_CH4
+    if (timer == TIM5) return 75;   // TIM5_CH4
+    mbed_die();
+    return 0;
+  }
+
+  void ConfigureLPTIM1() {
+    // Configure LPTIM1 to generate a pulse on LPTIM1_OUT when triggered.
+    // This pulse triggers all ADCs simultaneously.
+
+    // Configure LPTIM1 clock source using proper HAL method
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {};
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPTIM1;
+    PeriphClkInit.Lptim1ClockSelection = RCC_LPTIM1CLKSOURCE_PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
+      return;
+    }
+
+    // Reset and enable LPTIM1 peripheral
+    __HAL_RCC_LPTIM1_FORCE_RESET();
+    __HAL_RCC_LPTIM1_RELEASE_RESET();
+    __HAL_RCC_LPTIM1_CLK_ENABLE();
+
+    // Initialize LPTIM1 for ADC triggering
+    static LPTIM_HandleTypeDef lptim_adc;
+    lptim_adc.Instance = LPTIM1;
+    lptim_adc.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
+    lptim_adc.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV4;
+    lptim_adc.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
+    lptim_adc.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
+    lptim_adc.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
+    lptim_adc.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
+    lptim_adc.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
+    lptim_adc.Init.Input2Source = LPTIM_INPUT2SOURCE_GPIO;
+
+    if (HAL_LPTIM_Init(&lptim_adc) != HAL_OK) {
+      while(true);
+    }
+
+    // Configure ARR/CMP values once during initialization and leave enabled
+    LPTIM1->CR |= LPTIM_CR_ENABLE;
+    LPTIM1->ICR = LPTIM_ICR_ARROKCF;
+    LPTIM1->ARR = 4;
+    while (!(LPTIM1->ISR & LPTIM_ISR_ARROK));
+    LPTIM1->ICR = LPTIM_ICR_CMPOKCF;
+    LPTIM1->CMP = 1;
+    while (!(LPTIM1->ISR & LPTIM_ISR_CMPOK));
+  }
+
+  void ConfigureDmaLptimTrigger() {
+    // Configure DMA to transfer SNGSTRT to LPTIM1->CR on each PWM timer
+    // update event. This triggers LPTIM1 which then triggers all ADCs.
+    __HAL_RCC_DMA1_CLK_ENABLE();
+    __HAL_RCC_DMA2_CLK_ENABLE();
+    __HAL_RCC_DMAMUX1_CLK_ENABLE();
+
+    MJ_ASSERT(options_.lptim_trigger_dma != nullptr);
+    DMA_Channel_TypeDef* dma = options_.lptim_trigger_dma;
+    DMAMUX_Channel_TypeDef* dmamux = Stm32Dma::SelectDmamux(dma);
+
+    // Disable DMA channel before configuration
+    dma->CCR = 0;
+
+    // Configure DMAMUX to route PWM timer CH4 event to this DMA channel
+    dmamux->CCR = GetTimerCh4DmamuxInput(timer_);
+
+    // Store the value to be transferred (ENABLE | SNGSTRT)
+    lptim1_sngstrt_value_ = LPTIM_CR_ENABLE | LPTIM_CR_SNGSTRT;
+
+    // Configure DMA channel:
+    // - Memory to peripheral
+    // - Memory address: &lptim1_sngstrt_value_
+    // - Peripheral address: &LPTIM1->CR
+    // - Transfer size: 32-bit
+    // - No increment (single value, single destination)
+    // - Circular mode (repeat on each trigger)
+    dma->CPAR = reinterpret_cast<uint32_t>(&LPTIM1->CR);
+    dma->CMAR = reinterpret_cast<uint32_t>(&lptim1_sngstrt_value_);
+    dma->CNDTR = 1;
+
+    dma->CCR =
+        DMA_CCR_CIRC |           // Circular mode
+        (0x2 << DMA_CCR_MSIZE_Pos) |  // 32-bit memory size
+        (0x2 << DMA_CCR_PSIZE_Pos) |  // 32-bit peripheral size
+        DMA_CCR_DIR |            // Memory to peripheral
+        DMA_CCR_EN;              // Enable channel
+  }
+
   static void WaitForAdc(ADC_TypeDef* adc) MOTEUS_CCM_ATTRIBUTE {
-    while ((adc->ISR & ADC_ISR_EOC) == 0);
+    while ((adc->ISR & ADC_ISR_EOS) == 0);
   }
 
   // CALLED IN INTERRUPT CONTEXT.
@@ -649,21 +773,8 @@ class BldcServo::Impl {
   }
 
   void ISR_DoTimer() __attribute__((always_inline)) MOTEUS_CCM_ATTRIBUTE {
-    // We start our conversion here so that it can work while we get
-    // ready.  This means we will throw away the result if our control
-    // timer says it isn't our turn yet, but that is a relatively
-    // minor waste.
-    ADC1->CR |= ADC_CR_ADSTART;
-    ADC2->CR |= ADC_CR_ADSTART;
-    ADC3->CR |= ADC_CR_ADSTART;
-    ADC4->CR |= ADC_CR_ADSTART;
-    ADC5->CR |= ADC_CR_ADSTART;
-
-    if constexpr (kInterruptDivisor != 1) {
-      phase_ = (phase_ + 1) % kInterruptDivisor;
-
-      if (phase_ != 0) { return; }
-    }
+    phase_ = (phase_ + 1) & rate_config_.interrupt_mask;
+    if (phase_) { return; }
 
 #ifdef MOTEUS_PERFORMANCE_MEASURE
     DWT->CYCCNT = 0;
@@ -671,25 +782,52 @@ class BldcServo::Impl {
 
     // No matter what mode we are in, always sample our ADC and
     // position sensors.
+    ISR_DoSenseCritical();
+
+    // We should not re-enter into this interrupt until our low
+    // priority portion is complete.
+    NVIC_DisableIRQ(pwm_irqn_);
+
+    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+  }
+
+  static void GlobalPendSv() MOTEUS_CCM_ATTRIBUTE {
+    g_impl_->ISR_DoTimerLowerPriority();
+  }
+
+  void ISR_DoTimerLowerPriority() __attribute__((always_inline)) MOTEUS_CCM_ATTRIBUTE {
+    SCB->ICSR |= SCB_ICSR_PENDSVCLR_Msk;
+
     ISR_DoSense();
 #ifdef MOTEUS_PERFORMANCE_MEASURE
     status_.dwt.sense = DWT->CYCCNT;
 #endif
 
-    SinCos sin_cos = cordic_(RadiansToQ31(status_.electrical_theta));
-    status_.sin = sin_cos.s;
-    status_.cos = sin_cos.c;
+    // current_data_ is volatile, so read it out now, and operate on
+    // the pointer for the rest of the routine.
+    CommandData* data = current_data_;
 
-    ISR_CalculateCurrentState(sin_cos);
+    SinCos sin_cos = ISR_CalculateCurrentState(data->synthetic_theta);
+
+    if (config_.fixed_voltage_mode) {
+      // Don't pretend we know where we are.
+      status_.position = 0.0f;
+      status_.velocity = 0.0f;
+      status_.torque_Nm = 0.0f;
+      status_.torque_error_Nm = 0.0f;
+    }
+
 #ifdef MOTEUS_PERFORMANCE_MEASURE
     status_.dwt.curstate = DWT->CYCCNT;
 #endif
 
-    ISR_DoControl(sin_cos);
+    ISR_DoControl(sin_cos, data);
 
 #ifdef MOTEUS_PERFORMANCE_MEASURE
     status_.dwt.control = DWT->CYCCNT;
 #endif
+
+    ISR_MaybeEmitDebug();
 
 #ifdef MOTEUS_PERFORMANCE_MEASURE
     status_.dwt.done = DWT->CYCCNT;
@@ -700,47 +838,54 @@ class BldcServo::Impl {
         ((*timer_cr1_) & TIM_CR1_DIR) ?
         (pwm_counts_ - cnt) :
         (pwm_counts_ + cnt);
-    status_.total_timer = 2 * pwm_counts_;
+    status_.total_timer = 2 * pwm_counts_ * rate_config_.interrupt_divisor;
+
+#ifdef MOTEUS_DEBUG_OUT
     debug_out_ = 0;
+#endif
+
+    NVIC_EnableIRQ(pwm_irqn_);
   }
 
-  void ISR_DoSense() __attribute__((always_inline)) MOTEUS_CCM_ATTRIBUTE {
-    // Wait for sampling to complete.
-    while ((ADC3->ISR & ADC_ISR_EOS) == 0);
+  void ISR_DoSenseCritical() __attribute__((always_inline)) MOTEUS_CCM_ATTRIBUTE {
+    // ADCs are triggered by hardware: Timer Update -> DMA -> LPTIM1
+    // -> LPTIM1_OUT -> ADCs.  This satisfies STM32G4 errata ES0430
+    // section 2.7.11 (simultaneous triggering).
 
+    // Wait for ADC sampling to complete.
+    while ((ADC3->ISR & ADC_ISR_EOSMP) == 0);
+
+#ifdef MOTEUS_DEBUG_OUT
     // We would like to set this debug pin as soon as possible.
     // However, if we flip it while the current ADCs are sampling,
     // they can get a lot more noise in some situations.  Thus just
     // wait until now.
     debug_out_ = 1;
+#endif
 
     // We are now out of the most time critical portion of the ISR,
-    // although it is still all pretty time critical since it runs
-    // at 40kHz.  But time spent until now actually limits the
+    // although it is still all pretty time critical since it runs at
+    // up to 30kHz.  But time spent until now actually limits the
     // maximum duty cycle we can achieve, whereas time spent below
     // just eats cycles the rest of the code could be using.
 
     // Check to see if any motor outputs are now high.  If so, fault,
     // because we have exceeded the maximum duty cycle we can achieve
     // while still sampling current correctly.
+
+#ifndef MOTEUS_DISABLE_PWM_CYCLE_OVERRUN
     if (status_.mode != kFault &&
-        (monitor1_.read() ||
-         monitor2_.read() ||
-         monitor3_.read())) {
+        phase_monitors_.read()) {
       status_.mode = kFault;
       status_.fault = errc::kPwmCycleOverrun;
     }
+#endif
+  }
 
+  void ISR_DoSense() __attribute__((always_inline)) MOTEUS_CCM_ATTRIBUTE {
     // With sampling done, we can kick off our encoder read.
-    position_sensor_->StartSample();
-
-    // Do a bit more rarely needed bookeeping while we let the ADCs
-    // finish.
-    if (current_data_->rezero_position) {
-      status_.position_to_set = *current_data_->rezero_position;
-      status_.rezeroed = true;
-      current_data_->rezero_position = {};
-    }
+    aux1_port_->ISR_MaybeStartSample();
+    aux2_port_->ISR_MaybeStartSample();
 
     if (std::isnan(current_data_->timeout_s) ||
         current_data_->timeout_s != 0.0f) {
@@ -756,180 +901,148 @@ class BldcServo::Impl {
     status_.dwt.adc_done = DWT->CYCCNT;
 #endif
 
-    status_.adc_cur1_raw = ADC3->DR;
-    status_.adc_cur2_raw = ADC1->DR;
-    status_.adc_cur3_raw = ADC2->DR;
+    if (family0_) {
+      status_.adc_cur1_raw = ADC3->DR;
+      status_.adc_cur2_raw = ADC1->DR;
+      status_.adc_cur3_raw = ADC2->DR;
+    } else if (family1_) {
+      status_.adc_cur1_raw = ADC1->DR;
+      status_.adc_cur2_raw = ADC2->DR;
+      status_.adc_cur3_raw = ADC3->DR;
+    } else if (family2_ || family3_) {
+      status_.adc_cur1_raw = ADC3->DR;
+      status_.adc_cur2_raw = ADC2->DR;
+      status_.adc_cur3_raw = ADC1->DR;
+    }
 
-    // TODO: Since we have to let ADC4/5 sample for much longer, we
-    // could save a lot of time by switching ADC5's targets every
-    // other cycle and not even reading it until the position sampling
-    // was done.  For now though, we read all the things every cycle.
+    // With hardware LPTIM1 triggering, ADC5 samples one channel per
+    // control cycle. We alternate between the two channels
+    // (vsense/tsense or tsense/msense depending on board version)
+    // each cycle.
     WaitForAdc(ADC4);
     WaitForAdc(ADC5);
 
-    if (hw_rev_ <= 4) {
+    // Clear the end of sample flag for the ADCs we check.
+    ADC3->ISR |= (ADC_ISR_EOSMP | ADC_ISR_EOS);
+    ADC4->ISR |= (ADC_ISR_EOSMP | ADC_ISR_EOS);
+    ADC5->ISR |= (ADC_ISR_EOSMP | ADC_ISR_EOS);
+
+    // Read ADC4 (same every cycle)
+    if (family0_rev4_and_older_) {
       status_.adc_motor_temp_raw = ADC4->DR;
-      status_.adc_voltage_sense_raw = ADC5->DR;
-    } else {
+    } else if (family0_) {
       status_.adc_voltage_sense_raw = ADC4->DR;
-      status_.adc_fet_temp_raw = ADC5->DR;
+    } else if (family1or2or3_) {
+      status_.adc_fet_temp_raw = ADC4->DR;
     }
 
-    // Start sampling the other thing on ADC5, what that is depends
-    // upon our board version.
-    if (hw_rev_ <= 4) {
-      ADC5->SQR1 =
-          (0 << ADC_SQR1_L_Pos) |  // length 1
-          tsense_sqr_ << ADC_SQR1_SQ1_Pos;
+    // Read ADC5 based on which phase we're in, then switch to other channel
+    if (adc5_phase_ == 0) {
+      // First channel: vsense (family0_rev4_and_older, family1or2or3) or
+      //                fet_temp (family0)
+      if (family0_rev4_and_older_) {
+        status_.adc_voltage_sense_raw = ADC5->DR;
+        ADC5->SQR1 = (0 << ADC_SQR1_L_Pos) | (tsense_sqr_ << ADC_SQR1_SQ1_Pos);
+      } else if (family0_) {
+        status_.adc_fet_temp_raw = ADC5->DR;
+        ADC5->SQR1 = (0 << ADC_SQR1_L_Pos) | (msense_sqr_ << ADC_SQR1_SQ1_Pos);
+      } else if (family1or2or3_) {
+        status_.adc_voltage_sense_raw = ADC5->DR;
+        ADC5->SQR1 = (0 << ADC_SQR1_L_Pos) | (msense_sqr_ << ADC_SQR1_SQ1_Pos);
+      }
     } else {
-      ADC5->SQR1 =
-          (0 << ADC_SQR1_L_Pos) |  // length 1
-          msense_sqr_ << ADC_SQR1_SQ1_Pos;
+      // Second channel: tsense (family0_rev4_and_older) or
+      //                 msense (family0, family1or2or3)
+      if (family0_rev4_and_older_) {
+        status_.adc_fet_temp_raw = ADC5->DR;
+        ADC5->SQR1 = (0 << ADC_SQR1_L_Pos) | (vsense_sqr_ << ADC_SQR1_SQ1_Pos);
+      } else if (family0_) {
+        status_.adc_motor_temp_raw = ADC5->DR;
+        ADC5->SQR1 = (0 << ADC_SQR1_L_Pos) | (tsense_sqr_ << ADC_SQR1_SQ1_Pos);
+      } else if (family1or2or3_) {
+        status_.adc_motor_temp_raw = ADC5->DR;
+        ADC5->SQR1 = (0 << ADC_SQR1_L_Pos) | (vsense_sqr_ << ADC_SQR1_SQ1_Pos);
+      }
     }
-    ADC5->CR |= ADC_CR_ADSTART;
-
-    // Wait for the position sample to finish.
-    const uint16_t old_position = status_.position;
+    adc5_phase_ = 1 - adc5_phase_;
 
 #ifdef MOTEUS_PERFORMANCE_MEASURE
     status_.dwt.start_pos_sample = DWT->CYCCNT;
 #endif
 
-    status_.position_raw = position_sensor_->FinishSample();
+    aux1_port_->ISR_MaybeFinishSample();
+    aux2_port_->ISR_MaybeFinishSample();
+    aux_adc_->ISR_StartSample();
 
 #ifdef MOTEUS_PERFORMANCE_MEASURE
     status_.dwt.done_pos_sample = DWT->CYCCNT;
 #endif
+    motor_position_->ISR_Update();
 
-    status_.position =
-        (motor_.invert ? (65536 - status_.position_raw) : status_.position_raw);
+    velocity_filter_(position_.velocity, &status_.velocity_filt);
 
-    const int offset_size = motor_.offset.size();
-    const int offset_index = status_.position * offset_size / 65536;
-    MJ_ASSERT(offset_index >= 0 && offset_index < offset_size);
-
-    constexpr float kU16ToTheta = k2Pi / 65536.0f;
-    status_.electrical_theta =
-        WrapZeroToTwoPi(
-            ((position_constant_ * status_.position) % 65536) * kU16ToTheta +
-            motor_.offset[offset_index]);
-
-    const int16_t delta_position =
-        static_cast<int16_t>(status_.position - old_position);
-    if ((status_.mode != kStopped && status_.mode != kFault) &&
-        std::abs(delta_position) > kMaxPositionDelta) {
-      // We probably had an error when reading the position.  We must fault.
-      status_.mode = kFault;
-      status_.fault = errc::kEncoderFault;
-    }
-
-    // While we are in the first calibrating state, our unwrapped
-    // position is forced to be within one rotation of 0.  Also, the
-    // AS5047 isn't guaranteed to be valid until 10ms after startup.
-    if (!std::isnan(status_.position_to_set) && startup_count_.load() > 10) {
-      const int16_t zero_position =
-          static_cast<int16_t>(
-              static_cast<int32_t>(status_.position) +
-              motor_.position_offset * (motor_.invert ? -1 : 1));
-      const float error = status_.position_to_set -
-                          zero_position / motor_scale16_;
-      const float integral_offsets =
-          std::round(error / motor_.unwrapped_position_scale);
-      status_.unwrapped_position_raw =
-          zero_position + integral_offsets * 65536.0f;
-      status_.position_to_set = std::numeric_limits<float>::quiet_NaN();
-    } else {
-      status_.unwrapped_position_raw += delta_position;
-    }
-
-    {
-      // We construct the velocity in a careful way so as to maximize
-      // the available resolution.  The windowed filter is calculated
-      // losslessly.  Then, the average is conducted in the floating
-      // point domain, so as to not suffer from rounding error.
-      velocity_filter_.Add(delta_position);
-      status_.velocity =
-          ((static_cast<float>(velocity_filter_.total()) / motor_scale16_) *
-           kRateHz) /
-          static_cast<float>(velocity_filter_.size());
-    }
-
-    status_.unwrapped_position =
-        status_.unwrapped_position_raw / motor_scale16_;
-
-    // The temperature sensing should be done by now, but just double
-    // check.
-    WaitForAdc(ADC5);
-    if (hw_rev_ <= 4) {
-      status_.adc_fet_temp_raw = ADC5->DR;
-    } else {
-      status_.adc_motor_temp_raw = ADC5->DR;
-    }
-
-    if (hw_rev_ <= 4) {
-      // Switch back to the voltage sense resistor.
-      ADC5->SQR1 =
-          (0 << ADC_SQR1_L_Pos) |  // length 1
-          (vsense_sqr_ << ADC_SQR1_SQ1_Pos);
-    } else {
-      // Switch back to FET temp sense.
-      ADC5->SQR1 =
-          (0 << ADC_SQR1_L_Pos) |  // length 1
-          (tsense_sqr_ << ADC_SQR1_SQ1_Pos);
-    }
 
 #ifdef MOTEUS_PERFORMANCE_MEASURE
     status_.dwt.done_temp_sample = DWT->CYCCNT;
 #endif
 
     {
-      constexpr int adc_max = 4096;
-      constexpr size_t size_thermistor_table =
-          sizeof(g_thermistor_lookup) / sizeof(*g_thermistor_lookup);
-      size_t offset = std::max<size_t>(
-          1, std::min<size_t>(
-              size_thermistor_table - 2,
-              status_.adc_fet_temp_raw * size_thermistor_table / adc_max));
-      const int16_t this_value = offset * adc_max / size_thermistor_table;
-      const int16_t next_value = (offset + 1) * adc_max / size_thermistor_table;
-      const float temp1 = g_thermistor_lookup[offset];
-      const float temp2 = g_thermistor_lookup[offset + 1];
-      status_.fet_temp_C = temp1 +
-          (temp2 - temp1) *
-          static_cast<float>(status_.adc_fet_temp_raw - this_value) /
-          static_cast<float>(next_value - this_value);
-    }
-  }
+      status_.fet_temp_C = fet_thermistor_.Calculate(status_.adc_fet_temp_raw);
+      temperature_filter_(status_.fet_temp_C, &status_.filt_fet_temp_C);
 
-  void ISR_UpdateFilteredBusV(float* filtered, float period_s) const MOTEUS_CCM_ATTRIBUTE {
-    if (std::isnan(*filtered)) {
-      *filtered = status_.bus_V;
-    } else {
-      const float alpha = 1.0f / (kRateHz * period_s);
-      *filtered = alpha * status_.bus_V + (1.0f - alpha) * *filtered;
+      if (config_.enable_motor_temperature) {
+        status_.motor_temp_C = motor_thermistor_.Calculate(status_.adc_motor_temp_raw);
+        temperature_filter_(status_.motor_temp_C, &status_.filt_motor_temp_C);
+      } else {
+        status_.motor_temp_C = status_.filt_motor_temp_C = 0.0f;
+      }
     }
+
+    status_.position = position_.position;
+    status_.velocity = position_.velocity;
+
+    aux_adc_->ISR_EndSample();
+    aux1_port_->ISR_EndAnalogSample();
+    aux2_port_->ISR_EndAnalogSample();
   }
 
   // This is called from the ISR.
-  void ISR_CalculateCurrentState(const SinCos& sin_cos) MOTEUS_CCM_ATTRIBUTE {
+  //
+  // Returns the SinCos for use by ISR_DoControl.
+  SinCos ISR_CalculateCurrentState(bool use_synthetic_theta) MOTEUS_CCM_ATTRIBUTE {
     status_.cur1_A = (status_.adc_cur1_raw - status_.adc_cur1_offset) * adc_scale_;
     status_.cur2_A = (status_.adc_cur2_raw - status_.adc_cur2_offset) * adc_scale_;
     status_.cur3_A = (status_.adc_cur3_raw - status_.adc_cur3_offset) * adc_scale_;
+    if (motor_.phase_invert) {
+      std::swap(status_.cur2_A, status_.cur3_A);
+    }
     status_.bus_V = status_.adc_voltage_sense_raw * vsense_adc_scale_;
 
-    ISR_UpdateFilteredBusV(&status_.filt_bus_V, 0.5f);
-    ISR_UpdateFilteredBusV(&status_.filt_1ms_bus_V, 0.001f);
+    const SinCos sin_cos = ISR_CalculateDerivedQuantities(
+        status_.cur1_A, status_.cur3_A, status_.cur2_A,
+        use_synthetic_theta);
 
-    DqTransform dq{sin_cos,
-          status_.cur1_A,
-          status_.cur3_A,
-          status_.cur2_A
-          };
-    status_.d_A = dq.d;
-    status_.q_A = dq.q;
-    status_.torque_Nm = torque_on() ? (
-        current_to_torque(status_.q_A) /
-        motor_.unwrapped_position_scale) : 0.0f;
+    status_.max_power_W = [&]() {
+      if (config_.override_board_max_power &&
+          std::isfinite(config_.max_power_W)) {
+        return config_.max_power_W;
+      }
+      const float board_power_limit =
+          Limit(
+              Interpolate(status_.filt_bus_V,
+                          g_hw_pins.power_V_l, g_hw_pins.power_V_h,
+                          g_hw_pins.power_P_l_W, g_hw_pins.power_P_h_W),
+              g_hw_pins.power_P_h_W,
+              g_hw_pins.power_P_l_W) * pwm_derate_;
+      if (!std::isfinite(config_.max_power_W)) {
+        return board_power_limit;
+      }
+      return std::min(config_.max_power_W, board_power_limit);
+    }();
+#ifdef MOTEUS_EMIT_CURRENT_TO_DAC
+    DAC1->DHR12R1 = static_cast<uint32_t>(status_.d_A * 400.0f + 2048.0f);
+#endif
+    return sin_cos;
   }
 
   bool torque_on() const {
@@ -951,339 +1064,19 @@ class BldcServo::Impl {
       case kVoltageDq:
       case kCurrent:
       case kPosition:
-      case kPositionTimeout:
       case kZeroVelocity:
-      case kStayWithinBounds: {
+      case kStayWithinBounds:
+      case kMeasureInductance:
+      case kBrake: {
         return true;
+      }
+      case kPositionTimeout: {
+        return config_.timeout_mode != 0;
       }
     }
     return false;
   }
 
-  void ISR_MaybeChangeMode(CommandData* data) MOTEUS_CCM_ATTRIBUTE {
-    // We are requesting a different mode than we are in now.  Do our
-    // best to advance if possible.
-    switch (data->mode) {
-      case kNumModes:
-      case kFault:
-      case kCalibrating:
-      case kCalibrationComplete: {
-        // These should not be possible.
-        MJ_ASSERT(false);
-        return;
-      }
-      case kStopped: {
-        // It is always valid to enter stopped mode.
-        status_.mode = kStopped;
-        return;
-      }
-      case kEnabling: {
-        // We can never change out from enabling in ISR context.
-        return;
-      }
-      case kPwm:
-      case kVoltage:
-      case kVoltageFoc:
-      case kVoltageDq:
-      case kCurrent:
-      case kPosition:
-      case kPositionTimeout:
-      case kZeroVelocity:
-      case kStayWithinBounds: {
-        switch (status_.mode) {
-          case kNumModes: {
-            MJ_ASSERT(false);
-            return;
-          }
-          case kFault: {
-            // We cannot leave a fault state directly into an active state.
-            return;
-          }
-          case kStopped: {
-            // From a stopped state, we first have to enter the
-            // calibrating state.
-            ISR_StartCalibrating();
-            return;
-          }
-          case kEnabling:
-          case kCalibrating: {
-            // We can only leave this state when calibration is
-            // complete.
-            return;
-          }
-          case kCalibrationComplete:
-          case kPwm:
-          case kVoltage:
-          case kVoltageFoc:
-          case kVoltageDq:
-          case kCurrent:
-          case kPosition:
-          case kZeroVelocity:
-          case kStayWithinBounds: {
-            if ((data->mode == kPosition || data->mode == kStayWithinBounds) &&
-                ISR_IsOutsideLimits()) {
-              status_.mode = kFault;
-              status_.fault = errc::kStartOutsideLimit;
-            } else {
-              // Yep, we can do this.
-              status_.mode = data->mode;
-
-              // Start from scratch if we are in a new mode.
-              ISR_ClearPid(kAlwaysClear);
-            }
-
-            return;
-          }
-          case kPositionTimeout: {
-            // We cannot leave this mode except through a stop.
-            return;
-          }
-        }
-      }
-    }
-  }
-
-  bool ISR_IsOutsideLimits() {
-    return ((!std::isnan(position_config_.position_min) &&
-             status_.unwrapped_position < position_config_.position_min) ||
-            (!std::isnan(position_config_.position_max) &&
-             status_.unwrapped_position > position_config_.position_max));
-  }
-
-  void ISR_StartCalibrating() {
-    status_.mode = kEnabling;
-
-    // The main context will set our state to kCalibrating when the
-    // motor driver is fully enabled.
-
-    (*pwm1_ccr_) = 0;
-    (*pwm2_ccr_) = 0;
-    (*pwm3_ccr_) = 0;
-
-    // Power should already be false for any state we could possibly
-    // be in, but lets just be certain.
-    motor_driver_->Power(false);
-
-    calibrate_adc1_ = 0;
-    calibrate_adc2_ = 0;
-    calibrate_adc3_ = 0;
-    calibrate_count_ = 0;
-  }
-
-  enum ClearMode {
-    kClearIfMode,
-    kAlwaysClear,
-  };
-
-  void ISR_ClearPid(ClearMode force_clear) MOTEUS_CCM_ATTRIBUTE {
-    const bool current_pid_active = [&]() MOTEUS_CCM_ATTRIBUTE {
-      switch (status_.mode) {
-        case kNumModes:
-        case kStopped:
-        case kFault:
-        case kEnabling:
-        case kCalibrating:
-        case kCalibrationComplete:
-        case kPwm:
-        case kVoltage:
-        case kVoltageFoc:
-        case kVoltageDq:
-          return false;
-        case kCurrent:
-        case kPosition:
-        case kPositionTimeout:
-        case kZeroVelocity:
-        case kStayWithinBounds:
-          return true;
-      }
-      return false;
-    }();
-
-    if (!current_pid_active || force_clear == kAlwaysClear) {
-      status_.pid_d.Clear();
-      status_.pid_q.Clear();
-
-      // We always want to start from 0 current when initiating
-      // current control of some form.
-      status_.pid_d.desired = 0.0f;
-      status_.pid_q.desired = 0.0f;
-    }
-
-    const bool position_pid_active = [&]() MOTEUS_CCM_ATTRIBUTE {
-      switch (status_.mode) {
-        case kNumModes:
-        case kStopped:
-        case kFault:
-        case kEnabling:
-        case kCalibrating:
-        case kCalibrationComplete:
-        case kPwm:
-        case kVoltage:
-        case kVoltageFoc:
-        case kVoltageDq:
-        case kCurrent:
-          return false;
-        case kPosition:
-        case kPositionTimeout:
-        case kZeroVelocity:
-        case kStayWithinBounds:
-          return true;
-      }
-      return false;
-    }();
-
-    if (!position_pid_active || force_clear == kAlwaysClear) {
-      status_.pid_position.Clear();
-      status_.control_position = {};
-    }
-  }
-
-  void ISR_DoControl(const SinCos& sin_cos) MOTEUS_CCM_ATTRIBUTE {
-    // current_data_ is volatile, so read it out now, and operate on
-    // the pointer for the rest of the routine.
-    CommandData* data = current_data_;
-
-    control_.Clear();
-
-    if (data->set_position) {
-      status_.unwrapped_position_raw =
-          static_cast<int32_t>(*data->set_position * 65536.0f);
-      data->set_position = {};
-    }
-
-    if (!std::isnan(status_.timeout_s) && status_.timeout_s > 0.0f) {
-      status_.timeout_s = std::max(0.0f, status_.timeout_s - kPeriodS);
-    }
-
-    // See if we need to update our current mode.
-    if (data->mode != status_.mode) {
-      ISR_MaybeChangeMode(data);
-    }
-
-    // Handle our persistent fault conditions.
-    if (status_.mode != kStopped && status_.mode != kFault) {
-      if (motor_driver_->fault()) {
-        status_.mode = kFault;
-        status_.fault = errc::kMotorDriverFault;
-      }
-      if (status_.bus_V > config_.max_voltage) {
-        status_.mode = kFault;
-        status_.fault = errc::kOverVoltage;
-      }
-      // NOTE: This is mostly to identify faulty voltage sense
-      // components.  Actual undervolts are more likely to trigger the
-      // drv8323 first.  If we erroneously use a very low voltage
-      // here, we can command a very large current due to the voltage
-      // compensation.
-      if (status_.bus_V < 4.0f) {
-        status_.mode = kFault;
-        status_.fault = errc::kUnderVoltage;
-      }
-      if (status_.fet_temp_C > config_.fault_temperature) {
-        status_.mode = kFault;
-        status_.fault = errc::kOverTemperature;
-      }
-    }
-
-    if ((status_.mode == kPosition || status_.mode == kStayWithinBounds) &&
-        !std::isnan(status_.timeout_s) &&
-        status_.timeout_s <= 0.0f) {
-      status_.mode = kPositionTimeout;
-    }
-
-    // Ensure unused PID controllers have zerod state.
-    ISR_ClearPid(kClearIfMode);
-
-    if (status_.mode != kFault) {
-      status_.fault = errc::kSuccess;
-    }
-
-#ifdef MOTEUS_PERFORMANCE_MEASURE
-    status_.dwt.control_sel_mode = DWT->CYCCNT;
-#endif
-
-    if (torque_on()) {
-      status_.cooldown_count = config_.cooldown_cycles;
-    }
-
-    switch (status_.mode) {
-      case kNumModes:
-      case kStopped: {
-        ISR_DoStopped();
-        break;
-      }
-      case kFault: {
-        ISR_DoFault();
-        break;
-      }
-      case kEnabling: {
-        break;
-      }
-      case kCalibrating: {
-        ISR_DoCalibrating();
-        break;
-      }
-      case kCalibrationComplete: {
-        break;
-      }
-      case kPwm: {
-        ISR_DoPwmControl(data->pwm);
-        break;
-      }
-      case kVoltage: {
-        ISR_DoVoltageControl(data->phase_v);
-        break;
-      }
-      case kVoltageFoc: {
-        ISR_DoVoltageFOC(data->theta, data->voltage);
-        break;
-      }
-      case kVoltageDq: {
-        ISR_DoVoltageDQ(sin_cos, data->d_V, data->q_V);
-        break;
-      }
-      case kCurrent: {
-        ISR_DoCurrent(sin_cos, data->i_d_A, data->i_q_A);
-        break;
-      }
-      case kPosition: {
-        ISR_DoPosition(sin_cos, data);
-        break;
-      }
-      case kPositionTimeout:
-      case kZeroVelocity: {
-        ISR_DoZeroVelocity(sin_cos, data);
-        break;
-      }
-      case kStayWithinBounds: {
-        ISR_DoStayWithinBounds(sin_cos, data);
-        break;
-      }
-    }
-  }
-
-  void ISR_DoStopped() MOTEUS_CCM_ATTRIBUTE {
-    if (status_.cooldown_count == 0) {
-      motor_driver_->Enable(false);
-      motor_driver_->Power(false);
-    } else {
-      status_.cooldown_count--;
-    }
-    *pwm1_ccr_ = 0;
-    *pwm2_ccr_ = 0;
-    *pwm3_ccr_ = 0;
-  }
-
-  void ISR_DoFault() MOTEUS_CCM_ATTRIBUTE {
-    if (status_.cooldown_count == 0) {
-      motor_driver_->Power(false);
-    } else {
-      status_.cooldown_count--;
-    }
-    *pwm1_ccr_ = 0;
-    *pwm2_ccr_ = 0;
-    *pwm3_ccr_ = 0;
-  }
 
   void ISR_DoCalibrating() {
     calibrate_adc1_ += status_.adc_cur1_raw;
@@ -1314,346 +1107,228 @@ class BldcServo::Impl {
     status_.mode = kCalibrationComplete;
   }
 
-  void ISR_DoPwmControl(const Vec3& pwm) MOTEUS_CCM_ATTRIBUTE {
-    control_.pwm.a = LimitPwm(pwm.a);
-    control_.pwm.b = LimitPwm(pwm.b);
-    control_.pwm.c = LimitPwm(pwm.c);
+  void ISR_MaybeEmitDebug() MOTEUS_CCM_ATTRIBUTE {
+    if (config_.emit_debug == 0 || !debug_uart_) { return; }
 
-    const uint16_t pwm1 = static_cast<uint16_t>(control_.pwm.a * pwm_counts_);
-    const uint16_t pwm2 = static_cast<uint16_t>(control_.pwm.b * pwm_counts_);
-    const uint16_t pwm3 = static_cast<uint16_t>(control_.pwm.c * pwm_counts_);
+    debug_buf_[0] = 0x5a;
 
-    // NOTE(jpieper): We flip pwm2 and pwm3 here, which changes the
-    // order of stepping.  Why you may ask?  No good reason.  It does
-    // require that the currents be similarly swapped in
-    // ISR_CalculateCurrentState.  Changing it back now would reverse
-    // the sign of position for any existing motor, so it isn't an
-    // easy change to make.
+    int pos = 1;
+
+    auto write_scalar =
+        [&](auto value) {
+          if ((pos + sizeof(value)) > sizeof(debug_buf_)) {
+            return;
+          }
+          std::memcpy(&debug_buf_[pos], &value, sizeof(value));
+          pos += sizeof(value);
+        };
+
+    if (config_.emit_debug & (1 << 0)) {
+      write_scalar(static_cast<uint16_t>(aux1_port_->status()->spi.value * 4));
+    }
+
+    if (config_.emit_debug & (1 << 1)) {
+      write_scalar(static_cast<int16_t>(32767.0f * status_.velocity / 100.0f));
+    }
+
+    if (config_.emit_debug & (1 << 2)) {
+      write_scalar(static_cast<int16_t>(32767.0f * status_.d_A / 100.0f));
+    }
+    if (config_.emit_debug & (1 << 3)) {
+      write_scalar(static_cast<int16_t>(32767.0f * status_.q_A / 100.0f));
+    }
+    if (config_.emit_debug & (1 << 4)) {
+      write_scalar(status_.adc_cur1_raw);
+    }
+    if (config_.emit_debug & (1 << 5)) {
+      write_scalar(status_.adc_cur2_raw);
+    }
+    if (config_.emit_debug & (1 << 6)) {
+      write_scalar(status_.adc_cur3_raw);
+    }
+
+    if (config_.emit_debug & (1 << 7)) {
+      write_scalar(static_cast<int16_t>(32767.0f * status_.cur1_A / 100.0f));
+    }
+
+    if (config_.emit_debug & (1 << 8)) {
+      write_scalar(static_cast<int16_t>(32767.0f * status_.cur2_A / 100.0f));
+    }
+
+    if (config_.emit_debug & (1 << 9)) {
+      write_scalar(static_cast<int16_t>(32767.0f * status_.cur3_A / 100.0f));
+    }
+
+    if (config_.emit_debug & (1 << 10)) {
+      write_scalar(static_cast<int16_t>(32767.0f * control_.torque_Nm / 30.0f));
+    }
+
+    if (config_.emit_debug & (1 << 11)) {
+      write_scalar(static_cast<uint16_t>(position_.sources[0].raw));
+    }
+
+    if (config_.emit_debug & (1 << 12)) {
+      write_scalar(static_cast<uint16_t>(position_.sources[1].raw));
+    }
+
+    if (config_.emit_debug & (1 << 13)) {
+      write_scalar(static_cast<uint16_t>(position_.sources[2].raw));
+    }
+
+    if (config_.emit_debug & (1 << 14)) {
+      write_scalar(static_cast<uint16_t>(status_.final_timer));
+    }
+
+    if (config_.emit_debug & (1 << 15)) {
+      write_scalar(static_cast<int16_t>(32767.0f * control_.d_V / 64.0f));
+    }
+
+    if (config_.emit_debug & (1 << 16)) {
+      write_scalar(static_cast<int16_t>(32767.0f * control_.q_V / 64.0f));
+    }
+
+    if (config_.emit_debug & (1 << 17)) {
+      write_scalar(static_cast<int16_t>(control_.pwm.a * 32767.0f));
+    }
+
+    if (config_.emit_debug & (1 << 18)) {
+      write_scalar(static_cast<int16_t>(control_.pwm.b * 32767.0f));
+    }
+
+    if (config_.emit_debug & (1 << 19)) {
+      write_scalar(static_cast<int16_t>(control_.pwm.c * 32767.0f));
+    }
+
+    if (config_.emit_debug & (1 << 20)) {
+      write_scalar(static_cast<int16_t>(32767.0f * status_.torque_Nm / 30.0f));
+    }
+
+    if (config_.emit_debug & (1 << 21)) {
+      write_scalar(static_cast<uint16_t>(32767.0f * status_.power_W / 3000.0f));
+    }
+
+    // Additional debug outputs for instability investigation
+    if (config_.emit_debug & (1 << 22)) {
+      // pid_d integral, scale ±100V range
+      write_scalar(static_cast<int16_t>(32767.0f * status_.pid_d.integral / 100.0f));
+    }
+    if (config_.emit_debug & (1 << 23)) {
+      // pid_q integral, scale ±100V range
+      write_scalar(static_cast<int16_t>(32767.0f * status_.pid_q.integral / 100.0f));
+    }
+    if (config_.emit_debug & (1 << 24)) {
+      // electrical_theta, scale 0-2pi to full int16 range
+      write_scalar(static_cast<int16_t>(32767.0f * status_.electrical_theta / kPi));
+    }
+    if (config_.emit_debug & (1 << 25)) {
+      // motor_base_velocity, scale ±200 rev/s
+      write_scalar(static_cast<int16_t>(32767.0f * status_.motor_base_velocity / 200.0f));
+    }
+    if (config_.emit_debug & (1 << 26)) {
+      // commanded d_A (i_d_A), scale ±100A range
+      write_scalar(static_cast<int16_t>(32767.0f * control_.i_d_A / 100.0f));
+    }
+    if (config_.emit_debug & (1 << 27)) {
+      // commanded q_A (i_q_A), scale ±100A range
+      write_scalar(static_cast<int16_t>(32767.0f * control_.i_q_A / 100.0f));
+    }
+
+    // We rely on the FIFO to queue these things up.
+    for (int i = 0; i < pos; i++) {
+      debug_uart_->TDR = debug_buf_[i];
+    }
+  }
+
+  void DoPwmControl(const Vec3& pwm) MOTEUS_CCM_ATTRIBUTE {
+    const uint16_t pwm1 =
+        static_cast<uint16_t>(pwm.a * pwm_counts_);
+    const uint16_t pwm2 =
+        static_cast<uint16_t>(pwm.b * pwm_counts_);
+    const uint16_t pwm3 =
+        static_cast<uint16_t>(pwm.c * pwm_counts_);
+
     *pwm1_ccr_ = pwm1;
-    *pwm2_ccr_ = pwm3;
-    *pwm3_ccr_ = pwm2;
-
-    motor_driver_->Power(true);
-  }
-
-  float ISR_VoltageToPwm(float v) const MOTEUS_CCM_ATTRIBUTE {
-    return 0.5f + Offset(config_.pwm_min, config_.pwm_min_blend,
-                         v / status_.filt_bus_V);
-  }
-
-  void ISR_DoVoltageControl(const Vec3& voltage) MOTEUS_CCM_ATTRIBUTE {
-    control_.voltage = voltage;
-
-    ISR_DoPwmControl(Vec3{
-        ISR_VoltageToPwm(voltage.a),
-            ISR_VoltageToPwm(voltage.b),
-            ISR_VoltageToPwm(voltage.c)});
-  }
-
-  void ISR_DoVoltageFOC(float theta, float voltage) MOTEUS_CCM_ATTRIBUTE {
-    SinCos sc = cordic_(RadiansToQ31(theta));
-    const float max_voltage = (0.5f - kMinPwm) * status_.filt_bus_V;
-    InverseDqTransform idt(sc, Limit(voltage, -max_voltage, max_voltage), 0);
-    ISR_DoVoltageControl(Vec3{idt.a, idt.b, idt.c});
-  }
-
-  void ISR_DoCurrent(const SinCos& sin_cos, float i_d_A_in, float i_q_A_in) MOTEUS_CCM_ATTRIBUTE {
-    auto limit_q_current = [&](float in) MOTEUS_CCM_ATTRIBUTE {
-      if (!std::isnan(position_config_.position_max) &&
-          status_.unwrapped_position > position_config_.position_max &&
-          in > 0.0f) {
-        // We derate the request in the direction that moves it
-        // further outside the position limits.  This is mostly useful
-        // when feedforward is applied, as otherwise, the position
-        // limits could easily be exceeded.  Without feedforward, we
-        // shouldn't really be trying to push outside the limits
-        // anyhow.
-        return in *
-            std::max(0.0f,
-                     1.0f - (status_.unwrapped_position -
-                             position_config_.position_max) /
-                     config_.position_derate);
-      }
-      if (!std::isnan(position_config_.position_min) &&
-          status_.unwrapped_position < position_config_.position_min &&
-          in < 0.0f) {
-        return in *
-            std::max(0.0f,
-                     1.0f - (position_config_.position_min -
-                             status_.unwrapped_position) /
-                     config_.position_derate);
-      }
-
-      return in;
-    };
-
-    const float derate_fraction = (
-        status_.fet_temp_C - config_.derate_temperature) / (
-            config_.fault_temperature - config_.derate_temperature);
-
-    const float derate_current_A =
-        std::max<float>(
-            0.0f,
-            derate_fraction *
-            (config_.derate_current_A - config_.max_current_A) +
-            config_.max_current_A);
-
-    const float temp_limit_A = std::min<float>(
-        config_.max_current_A, derate_current_A);
-
-    auto limit_either_current = [&](float in) MOTEUS_CCM_ATTRIBUTE {
-      return Limit(in, -temp_limit_A, temp_limit_A);
-    };
-
-    const float i_q_A = limit_either_current(limit_q_current(i_q_A_in));
-    const float i_d_A = limit_either_current(i_d_A_in);
-
-    control_.i_d_A = i_d_A;
-    control_.i_q_A = i_q_A;
-
-    const float d_V =
-        (config_.feedforward_scale * i_d_A * motor_.resistance_ohm) +
-        pid_d_.Apply(status_.d_A, i_d_A, 1.0f, 0.0f, kRateHz);
-
-    const float q_V =
-        (config_.feedforward_scale * (
-            i_q_A * motor_.resistance_ohm -
-            status_.velocity * motor_.v_per_hz /
-            motor_.unwrapped_position_scale)) +
-        pid_q_.Apply(status_.q_A, i_q_A, 0.0f, 0.0f, kRateHz);
-
-    ISR_DoVoltageDQ(sin_cos, d_V, q_V);
-  }
-
-  void ISR_DoVoltageDQ(const SinCos& sin_cos, float d_V, float q_V) MOTEUS_CCM_ATTRIBUTE {
-    if (motor_.poles == 0) {
-      // We aren't configured yet.
-      status_.mode = kFault;
-      status_.fault = errc::kMotorNotConfigured;
-      return;
+    if (!motor_.phase_invert) {
+      *pwm2_ccr_ = pwm3;
+      *pwm3_ccr_ = pwm2;
+    } else {
+      *pwm2_ccr_ = pwm2;
+      *pwm3_ccr_ = pwm3;
     }
 
-    control_.d_V = d_V;
-    control_.q_V = q_V;
-
-    const float max_voltage = (0.5f - kMinPwm) * status_.filt_bus_V;
-    auto limit_v = [&](float in) MOTEUS_CCM_ATTRIBUTE {
-      return Limit(in, -max_voltage, max_voltage);
-    };
-    InverseDqTransform idt(sin_cos, limit_v(control_.d_V),
-                           limit_v(control_.q_V));
-
-#ifdef MOTEUS_PERFORMANCE_MEASURE
-    status_.dwt.control_done_cur = DWT->CYCCNT;
-#endif
-
-    ISR_DoVoltageControl(Vec3{idt.a, idt.b, idt.c});
+    motor_driver_->PowerOn();
   }
 
-  void ISR_DoZeroVelocity(const SinCos& sin_cos, CommandData* data) MOTEUS_CCM_ATTRIBUTE {
-    PID::ApplyOptions apply_options;
-    apply_options.kp_scale = 0.0;
-    apply_options.kd_scale = 1.0;
-
-    ISR_DoPositionCommon(sin_cos, data,
-                         apply_options, config_.timeout_max_torque_Nm,
-                         0.0f, 0.0f);
+  void DoHardStop() MOTEUS_CCM_ATTRIBUTE {
+    const auto result = motor_driver_->StartEnable(false);
+    MJ_ASSERT(result == MotorDriver::kDisabled);
+    motor_driver_->PowerOff();
+    *pwm1_ccr_ = 0;
+    *pwm2_ccr_ = 0;
+    *pwm3_ccr_ = 0;
   }
 
-  void ISR_DoPosition(const SinCos& sin_cos, CommandData* data) MOTEUS_CCM_ATTRIBUTE {
-    PID::ApplyOptions apply_options;
-    apply_options.kp_scale = data->kp_scale;
-    apply_options.kd_scale = data->kd_scale;
-
-    ISR_DoPositionCommon(sin_cos, data, apply_options, data->max_torque_Nm,
-                         data->feedforward_Nm, data->velocity);
+  void DoCalibrating() MOTEUS_CCM_ATTRIBUTE {
+    ISR_DoCalibrating();
   }
 
-  void ISR_DoPositionCommon(
-      const SinCos& sin_cos, CommandData* data,
-      const PID::ApplyOptions& pid_options,
-      float max_torque_Nm,
-      float feedforward_Nm,
-      float velocity) MOTEUS_CCM_ATTRIBUTE {
-    // Note that status_.control_position is measured in terms of 1 /
-    // 65536th of unwrapped_position_raw.  This is so that velocities
-    // do not become so small as to result in no change whatsoever at
-    // the control rate.
-    //
-    // We go to some lengths in our conversions to and from
-    // control_position so as to avoid converting a float directly to
-    // an int64, which calls out to a system library that is pretty
-    // slow.
-
-    if (!std::isnan(data->position)) {
-      status_.control_position =
-          static_cast<int64_t>(65536) *
-          static_cast<int64_t>(
-              static_cast<int32_t>(motor_scale16_ * data->position));
-      data->position = std::numeric_limits<float>::quiet_NaN();
-    } else if (!status_.control_position) {
-      status_.control_position =
-          static_cast<int64_t>(65536) *
-          static_cast<int64_t>(status_.unwrapped_position_raw);
-    }
-
-    auto velocity_command = velocity;
-
-    const auto old_position = *status_.control_position;
-    // This limits our usable velocity to 20kHz modulo the position
-    // scale at a 40kHz switching frequency.  1.2 million RPM should
-    // be enough for anybody?
-    status_.control_position =
-        *status_.control_position +
-        static_cast<int32_t>(
-            (65536.0f * motor_scale16_ * velocity_command) /
-            kRateHz);
-
-    const auto saturate = [&](auto value, auto compare) MOTEUS_CCM_ATTRIBUTE {
-      if (std::isnan(value)) { return; }
-      const auto limit_value = (
-          static_cast<int64_t>(65536) *
-          static_cast<int64_t>(
-              static_cast<int32_t>(motor_scale16_ * value)));
-      if (compare(*status_.control_position, limit_value)) {
-        status_.control_position = limit_value;
-      }
-    };
-    saturate(position_config_.position_min, [](auto l, auto r) { return l < r; });
-    saturate(position_config_.position_max, [](auto l, auto r) { return l > r; });
-
-    if (!std::isnan(data->stop_position)) {
-      const int64_t stop_position_raw =
-          static_cast<int64_t>(65536) *
-          static_cast<int64_t>(
-              static_cast<int32_t>(motor_scale16_ * data->stop_position));
-
-      auto sign = [](auto value) MOTEUS_CCM_ATTRIBUTE -> float {
-        if (value < 0) { return -1.0f; }
-        if (value > 0) { return 1.0f; }
-        return 0.0f;
-      };
-      if (sign(*status_.control_position -
-               stop_position_raw) * velocity_command > 0.0f) {
-        // We are moving away from the stop position.  Force it to be there.
-        status_.control_position = stop_position_raw;
-      }
-    }
-    if (*status_.control_position == old_position) {
-      // We have hit a limit.  Assume a velocity of 0.
-      velocity_command = 0.0f;
-    }
-
-    const float measured_velocity = Threshold(
-        status_.velocity, -config_.velocity_threshold,
-        config_.velocity_threshold);
-
-    // We always control relative to the control position of 0, so
-    // that we get equal performance across the entire viable integral
-    // position range.
-    const int32_t scaled_control =
-        static_cast<int32_t>(*status_.control_position / 65536);
-    const float unlimited_torque_Nm =
-        pid_position_.Apply(
-            (status_.unwrapped_position_raw - scaled_control) /
-            65536.0f * motor_.unwrapped_position_scale,
-            0.0,
-            measured_velocity, velocity_command,
-            kRateHz,
-            pid_options) +
-        feedforward_Nm;
-
-    const float limited_torque_Nm =
-        Limit(unlimited_torque_Nm, -max_torque_Nm, max_torque_Nm);
-
-    control_.torque_Nm = limited_torque_Nm;
-
-    const float limited_q_A =
-        torque_to_current(limited_torque_Nm * motor_.unwrapped_position_scale);
-
-    const float q_A =
-        is_torque_constant_configured() ?
-        limited_q_A :
-        Limit(limited_q_A, -kMaxUnconfiguredCurrent, kMaxUnconfiguredCurrent);
-
-    const float d_A = [&]() MOTEUS_CCM_ATTRIBUTE {
-      if (config_.flux_brake_min_voltage <= 0.0f) {
-        return 0.0f;
-      }
-
-      const auto error = (
-          status_.filt_1ms_bus_V - config_.flux_brake_min_voltage);
-
-      if (error <= 0.0f) {
-        return 0.0f;
-      }
-
-      return (error / config_.flux_brake_resistance_ohm);
-    }();
-
-#ifdef MOTEUS_PERFORMANCE_MEASURE
-    status_.dwt.control_done_pos = DWT->CYCCNT;
-#endif
-
-    ISR_DoCurrent(sin_cos, d_A, q_A);
+  void DoBrake() MOTEUS_CCM_ATTRIBUTE {
+    *pwm1_ccr_ = 0;
+    *pwm2_ccr_ = 0;
+    *pwm3_ccr_ = 0;
+    motor_driver_->PowerOn();
   }
 
-  void ISR_DoStayWithinBounds(const SinCos& sin_cos, CommandData* data) {
-    const auto target_position = [&]() MOTEUS_CCM_ATTRIBUTE -> std::optional<float> {
-      if (!std::isnan(data->bounds_min) &&
-          status_.unwrapped_position < data->bounds_min) {
-        return data->bounds_min;
-      }
-      if (!std::isnan(data->bounds_max) &&
-          status_.unwrapped_position > data->bounds_max) {
-        return data->bounds_max;
-      }
-      return {};
-    }();
-
-    if (!target_position) {
-      status_.pid_position.Clear();
-      status_.control_position = std::numeric_limits<float>::quiet_NaN();
-
-      // In this region, we still apply feedforward torques if they
-      // are present.
-      const float limited_torque_Nm =
-          Limit(data->feedforward_Nm, -data->max_torque_Nm, data->max_torque_Nm);
-      control_.torque_Nm = limited_torque_Nm;
-      const float limited_q_A =
-          torque_to_current(limited_torque_Nm * motor_.unwrapped_position_scale);
-
-      ISR_DoCurrent(sin_cos, 0.0f, limited_q_A);
-      return;
-    }
-
-    // Control position to whichever bound we are currently violating.
-    PID::ApplyOptions apply_options;
-    apply_options.kp_scale = data->kp_scale;
-    apply_options.kd_scale = data->kd_scale;
-
-    data->position = *target_position;
-    data->velocity = 0.0;
-
-    ISR_DoPositionCommon(
-        sin_cos, data, apply_options,
-        data->max_torque_Nm, data->feedforward_Nm, 0.0f);
+  void DoHiz() MOTEUS_CCM_ATTRIBUTE {
+    *pwm1_ccr_ = 0;
+    *pwm2_ccr_ = 0;
+    *pwm3_ccr_ = 0;
+    motor_driver_->PowerOff();
   }
 
-  float LimitPwm(float in) MOTEUS_CCM_ATTRIBUTE {
-    // We can't go full duty cycle or we wouldn't have time to sample
-    // the current.
-    return Limit(in, kMinPwm, kMaxPwm);
+  void StartCalibrating() MOTEUS_CCM_ATTRIBUTE {
+    (*pwm1_ccr_) = 0;
+    (*pwm2_ccr_) = 0;
+    (*pwm3_ccr_) = 0;
+    motor_driver_->PowerOff();
+
+    calibrate_adc1_ = 0;
+    calibrate_adc2_ = 0;
+    calibrate_adc3_ = 0;
+    calibrate_count_ = 0;
+  }
+
+  bool motor_driver_fault() const MOTEUS_CCM_ATTRIBUTE {
+    return motor_driver_->fault();
+  }
+
+  SinCos cordic(int32_t radians_q31) const MOTEUS_CCM_ATTRIBUTE {
+    return cordic_(radians_q31);
+  }
+
+  int64_t absolute_relative_delta() const MOTEUS_CCM_ATTRIBUTE {
+    return static_cast<int64_t>(
+        motor_position_->absolute_relative_delta.load());
   }
 
   const Options options_;
   MillisecondTimer* const ms_timer_;
-  AS5047* const position_sensor_;
   MotorDriver* const motor_driver_;
+  AuxADC* const aux_adc_;
+  AuxPort* const aux1_port_;
+  AuxPort* const aux2_port_;
+  MotorPosition* const motor_position_;
 
-  Motor motor_;
+
+  Motor& motor_ = *motor_position_->motor();
+  const MotorPosition::Status& position_ = motor_position_->status();
   Config config_;
   PositionConfig position_config_;
+
+  // Counterpart to isr_motor_position_epoch_ (inherited from
+  // BldcServoControl), only accessed from the main loop.
+  uint8_t main_motor_position_epoch_ = 0;
+
   TIM_TypeDef* timer_ = nullptr;
   volatile uint32_t* timer_sr_ = nullptr;
   volatile uint32_t* timer_cr1_ = nullptr;
@@ -1674,9 +1349,7 @@ class BldcServo::Impl {
   PwmOut pwm2_;
   PwmOut pwm3_;
 
-  DigitalMonitor monitor1_;
-  DigitalMonitor monitor2_;
-  DigitalMonitor monitor3_;
+  PhaseMonitors phase_monitors_;
 
   volatile uint32_t* pwm1_ccr_ = nullptr;
   volatile uint32_t* pwm2_ccr_ = nullptr;
@@ -1694,11 +1367,26 @@ class BldcServo::Impl {
 
   AnalogOut debug_dac_;
 
+#ifdef MOTEUS_DEBUG_OUT
   // This is just for debugging.
   DigitalOut debug_out_;
-  DigitalOut debug_out2_;
+#endif
+
+  RateConfig rate_config_;
 
   int32_t phase_ = 0;
+
+  // Tracks which ADC5 channel is being sampled (alternates each control cycle).
+  // 0 = first channel (vsense/tsense/fet_temp depending on board)
+  // 1 = second channel (tsense/msense depending on board)
+  int32_t adc5_phase_ = 0;
+
+  // Value transferred by DMA to LPTIM1->CR to trigger ADC sampling.
+  // Must be in memory accessible by DMA (not CCM).
+  uint32_t lptim1_sngstrt_value_ = 0;
+
+  Thermistor fet_thermistor_;
+  Thermistor motor_thermistor_;
 
   CommandData data_buffers_[2] = {};
 
@@ -1713,8 +1401,6 @@ class BldcServo::Impl {
   CommandData telemetry_data_;
 
   // These values should only be modified from within the ISR.
-  mjlib::base::WindowedAverage<
-    int16_t, kMaxVelocityFilter, int32_t> velocity_filter_;
   Status status_;
   Control control_;
   uint32_t calibrate_adc1_ = 0;
@@ -1722,26 +1408,45 @@ class BldcServo::Impl {
   uint32_t calibrate_adc3_ = 0;
   uint16_t calibrate_count_ = 0;
 
-  PID pid_d_{&config_.pid_dq, &status_.pid_d};
-  PID pid_q_{&config_.pid_dq, &status_.pid_q};
+  SimplePI pid_d_{&pid_d_config_, &status_.pid_d};
+  SimplePI pid_q_{&pid_q_config_, &status_.pid_q};
   PID pid_position_{&config_.pid_position, &status_.pid_position};
 
-  Stm32Serial debug_serial_;
+  USART_TypeDef* debug_uart_ = nullptr;
+  USART_TypeDef* onboard_debug_uart_ = nullptr;
 
-  std::atomic<uint32_t> startup_count_{0};
+  // 7 bytes is the max that we can get out at 3Mbit running at
+  // 40000Hz.
+  uint8_t debug_buf_[7] = {};
 
-  float torque_constant_ = 0.01f;
-  int32_t position_constant_ = 0;
-  // 65536.0f / unwrapped_position_scale_
-  float motor_scale16_ = 0;
   float adc_scale_ = 0.0f;
+  float pwm_derate_ = 1.0f;
 
   float vsense_adc_scale_ = 0.0f;
 
   uint32_t pwm_counts_ = 0;
   Cordic cordic_;
 
-  const uint8_t hw_rev_ = g_measured_hw_rev;
+  uint32_t adc1_sqr_ = 0;
+  uint32_t adc2_sqr_ = 0;
+  uint32_t adc3_sqr_ = 0;
+  uint32_t adc4_sqr_ = 0;
+
+  IRQn_Type pwm_irqn_ = {};
+
+  ExponentialFilter velocity_filter_;
+  ExponentialFilter temperature_filter_;
+
+  const bool family0_rev4_and_older_ = (
+      g_measured_hw_family == 0 &&
+      g_measured_hw_rev <= 4);
+  const bool family0_ = (g_measured_hw_family == 0);
+  const bool family1or2or3_ = (g_measured_hw_family == 1 ||
+                               g_measured_hw_family == 2 ||
+                               g_measured_hw_family == 3);
+  const bool family1_ = (g_measured_hw_family == 1);
+  const bool family2_ = (g_measured_hw_family == 2);
+  const bool family3_ = (g_measured_hw_family == 3);
 
   static Impl* g_impl_;
 };
@@ -1752,12 +1457,16 @@ BldcServo::BldcServo(micro::Pool* pool,
                      micro::PersistentConfig* persistent_config,
                      micro::TelemetryManager* telemetry_manager,
                      MillisecondTimer* millisecond_timer,
-                     AS5047* position_sensor,
                      MotorDriver* motor_driver,
+                     AuxADC* aux_adc,
+                     AuxPort* aux1_port,
+                     AuxPort* aux2_port,
+                     MotorPosition* motor_position,
                      const Options& options)
     : impl_(pool,
             persistent_config, telemetry_manager,
-            millisecond_timer, position_sensor, motor_driver,
+            millisecond_timer, motor_driver,
+            aux_adc, aux1_port, aux2_port, motor_position,
             options) {}
 BldcServo::~BldcServo() {}
 
@@ -1785,8 +1494,44 @@ const BldcServo::Control& BldcServo::control() const {
   return impl_->control();
 }
 
-const BldcServo::Motor& BldcServo::motor() const {
-  return impl_->motor();
+const AuxPort::Status& BldcServo::aux1() const {
+  return impl_->aux1();
+}
+
+const AuxPort::Status& BldcServo::aux2() const {
+  return impl_->aux2();
+}
+
+const MotorPosition::Status& BldcServo::motor_position() const {
+  return impl_->motor_position();
+}
+
+MotorPosition::Config* BldcServo::motor_position_config() {
+  return impl_->motor_position_config();
+}
+
+const MotorPosition::Config* BldcServo::motor_position_config() const {
+  return impl_->motor_position_config();
+}
+
+void BldcServo::SetOutputPositionNearest(float position) {
+  impl_->SetOutputPositionNearest(position);
+}
+
+void BldcServo::SetOutputPosition(float position) {
+  impl_->SetOutputPosition(position);
+}
+
+void BldcServo::RequireReindex() {
+  impl_->RequireReindex();
+}
+
+void BldcServo::RecapturePositionVelocity() {
+  impl_->RecapturePositionVelocity();
+}
+
+void BldcServo::Fault(moteus::errc fault_code) {
+  impl_->Fault(fault_code);
 }
 
 }

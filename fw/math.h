@@ -1,4 +1,4 @@
-// Copyright 2018 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 
 namespace moteus {
 
@@ -25,6 +27,7 @@ constexpr float kSqrt3_4 = 0.86602540378f;
 constexpr float kSqrt6 = 2.449489742783178f;
 constexpr float kSqrt3 = 1.7320508075688772f;
 constexpr float kSqrt2 = 1.4142135623730951f;
+constexpr float kSvpwmRatio = 1.1547f;  // 2/sqrt(3)
 
 float WrapZeroToTwoPi(float) __attribute__((always_inline));
 
@@ -37,6 +40,22 @@ inline float WrapZeroToTwoPi(float x) {
   const int32_t divisor = static_cast<int>(x / k2Pi);
   const float mod = x - divisor * k2Pi;
   return (mod >= 0.0f) ? mod : (mod + k2Pi);
+}
+
+float WrapNegPiToPi(float) __attribute__((always_inline));
+
+inline float WrapNegPiToPi(float x) {
+  // Short-circuit the common case where x is already in range so
+  // we don't introduce ULP-level noise via WrapZeroToTwoPi's
+  // truncate-and-subtract.
+  if (x >= -kPi && x <= kPi) { return x; }
+
+  // Otherwise wrap into [0, 2*pi) then fold the upper half down.
+  // Wrapping first (rather than adding pi first) avoids the
+  // precision loss that would come from k2Pi not being exactly
+  // 2 * kPi in float.
+  const float wrapped = WrapZeroToTwoPi(x);
+  return (wrapped > kPi) ? (wrapped - k2Pi) : wrapped;
 }
 
 int32_t RadiansToQ31(float) __attribute__((always_inline));
@@ -52,13 +71,38 @@ inline int32_t RadiansToQ31(float x) {
   return static_cast<int32_t>(((mod > 0.5f) ? (mod - 1.0f) : mod) * 4294967296.0f);
 }
 
+namespace detail {
+union float_long {
+  float f;
+  long l;
+};
+}
+
+// We re-implement frexpf so that it can get stuck into the CCM RAM.
+// Otherwise it calls out to the libc one, which will be much slower
+// since it is in normal flash.
+float my_frexpf(float x, int* pw2) __attribute((always_inline));
+
+inline float my_frexpf(float x, int *pw2) {
+  detail::float_long fl;
+  long int i;
+
+  fl.f = x;
+  i = (fl.l >> 23) & 0x000000ff;
+  i -= 0x7e;
+  *pw2 = i;
+  fl.l &= 0x807fffff;
+  fl.l |= 0x3f000000;
+  return fl.f;
+}
+
 float log2f_approx(float X) __attribute__((always_inline));
 
 inline float log2f_approx(float X) {
   // From: http://openaudio.blogspot.com/2017/02/faster-log10-and-pow.html
   float Y, F;
   int E;
-  F = frexpf(fabsf(X), &E);
+  F = my_frexpf(fabsf(X), &E);
   Y = 1.23149591368684f;
   Y *= F;
   Y += -4.11852516267426f;
@@ -75,15 +119,13 @@ float pow2f_approx(float x) __attribute__((always_inline));
 inline float pow2f_approx(float x) {
   // From: https://gist.github.com/petrsm/079de9396d63e00d5994a7cc936ae9c7
 
-  volatile union {
-    float f;
-    unsigned int i;
-  } cvt;
-
   const float pi = static_cast<int>(x);
   const float pf = x - pi;
-  cvt.i = (1 << 23) * (static_cast<int>(x) + 127);
-  const float pow2i = cvt.f;
+  // __builtin_bit_cast lets the compiler use a single VMOV between
+  // integer and float registers instead of a memory round-trip
+  // through volatile.
+  const float pow2i = __builtin_bit_cast(float,
+      static_cast<unsigned int>((1 << 23) * (static_cast<int>(x) + 127)));
   float pow2f = 7.9204240219773237e-2f;
 
   pow2f = pow2f * pf + 2.2433836478672357e-1f;
@@ -93,4 +135,31 @@ inline float pow2f_approx(float x) {
   return pow2i * pow2f;
 }
 
+inline float FastAtan2(float y, float x) {
+  // Based on https://math.stackexchange.com/a/1105038/81278
+
+  // a := min (|x|, |y|) / max (|x|, |y|)
+  const float abs_y = std::abs(y);
+  const float abs_x = std::abs(x);
+  // inject FLT_MIN in denominator to avoid division by zero
+  const float a = std::min(abs_x, abs_y) / (std::max(abs_x, abs_y) + std::numeric_limits<float>::min());
+  // s := a * a
+  const float s = a * a;
+  // r := ((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a + a
+  float r = ((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a;
+  // if |y| > |x| then r := 1.57079637 - r
+  if (abs_y > abs_x) {
+    r = 1.57079637f - r;
+  }
+    // if x < 0 then r := 3.14159274 - r
+  if (x < 0.0f) {
+    r = 3.14159274f - r;
+  }
+  // if y < 0 then r := -r
+  if (y < 0.0f) {
+    r = -r;
+  }
+
+  return r;
+}
 }

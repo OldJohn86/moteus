@@ -1,6 +1,6 @@
 # -*- python -*-
 
-# Copyright 2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,6 @@ def bazel_toolchain_repository():
     github_archive(
         name = "com_github_mjbots_bazel_toolchain",
         repo = "mjbots/bazel-toolchain",
-        commit = "2df5a44b3ab9942cde8166fecb05945b568aa214",
-        sha256 = "a09d625bd071e79ca9702277ab94a31e0f0929036fe5a0d472addb14183a1a61",
+        commit = "9cc9535ef65a9361ba144be54d3f72c19346abf2",
+        sha256 = "54ce65745967b8447c095385d23aca8e56c2ae889d51b61bd2239e450ccb43fd",
     )

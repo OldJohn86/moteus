@@ -1,6 +1,6 @@
 # -*- python -*-
 
-# Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,20 +21,41 @@ load("@com_github_ARMmbed_mbed-g4-bootloader//:rules.bzl", g4_bootloader_mbed_bi
 COPTS = [
     "-Werror",
     "-Wdouble-promotion",
+    "-gdwarf-4",
 ]
 
 cc_library(
     name = "common",
     hdrs = [
+        "bldc_servo_control.h",
+        "bldc_servo_position.h",
+        "bldc_servo_structs.h",
+        "aux_common.h",
+        "ccm.h",
+        "error.h",
         "foc.h",
         "math.h",
+        "measured_hw_rev.h",
+        "motor_position.h",
+        "pid.h",
+        "simple_pi.h",
+        "thermistor.h",
         "torque_model.h",
+        "stm32_i2c_timing.h",
+        "strtof.h",
+        "bissc_extract.h",
+        "aksim2_validator.h",
     ],
     srcs = [
         "foc.cc",
     ],
     deps = [
+        "@com_github_mjbots_mjlib//mjlib/base:limit",
+        "@com_github_mjbots_mjlib//mjlib/base:visitor",
         "@com_github_mjbots_mjlib//mjlib/micro:atomic_event_queue",
+        "@com_github_mjbots_mjlib//mjlib/micro:error_code",
+        "@com_github_mjbots_mjlib//mjlib/micro:persistent_config",
+        "@com_github_mjbots_mjlib//mjlib/micro:telemetry_manager",
     ],
     copts = COPTS,
 )
@@ -71,33 +92,56 @@ g4_bootloader_mbed_binary(
 )
 
 MOTEUS_SOURCES = [
+    "aksim2.h",
     "as5047.h",
+    "aux_adc.h",
+    "aux_mbed.h",
+    "aux_port.h",
+    "bissc.h",
+    "mbed_util.h",
     "moteus_assert.cc",
     "bldc_servo.h",
     "bldc_servo.cc",
+    "bldc_servo_control.h",
     "board_debug.h",
     "board_debug.cc",
     "bootloader.h",
+    "clock_manager.h",
+    "cui_amt21.h",
+    "cui_amt22.h",
     "drv8323.h",
     "drv8323.cc",
-    "error.h",
     "error.cc",
     "hardfault.s",
     "firmware_info.h",
     "firmware_info.cc",
+    "ic_pz.h",
+    "ma732.h",
+    "orbis.h",
     "moteus_controller.h",
     "moteus_controller.cc",
-    "moteus_hardfault_handler.c",
+    "moteus_hardfault_handler.cc",
     "moteus_hw.h",
+    "moteus_hw.cc",
     "millisecond_timer.h",
     "motor_driver.h",
-    "pid.h",
+    "stm32_dma.h",
+    "stm32g4_adc.h",
+    "stm32g4_adc.cc",
+    "stm32g4_dma_uart.h",
+    "stm32_bitbang_spi.h",
+    "stm32_digital_output.h",
+    "stm32_gpio_interrupt_in.h",
+    "stm32_gpio_interrupt_in.cc",
+    "stm32_i2c.h",
     "stm32_spi.h",
     "stm32_serial.h",
     "stm32_serial.cc",
     "stm32.h",
     "system_info.h",
     "system_info.cc",
+    "uuid.h",
+    "uuid.cc",
     "moteus.cc",
 ]
 
@@ -106,13 +150,11 @@ MOTEUS_DEPS = [
     ":git_info",
     "@com_github_mjbots_mjlib//mjlib/base:assert",
     "@com_github_mjbots_mjlib//mjlib/base:inplace_function",
-    "@com_github_mjbots_mjlib//mjlib/base:limit",
     "@com_github_mjbots_mjlib//mjlib/base:windowed_average",
     "@com_github_mjbots_mjlib//mjlib/micro:async_exclusive",
     "@com_github_mjbots_mjlib//mjlib/micro:async_stream",
     "@com_github_mjbots_mjlib//mjlib/micro:callback_table",
     "@com_github_mjbots_mjlib//mjlib/micro:command_manager",
-    "@com_github_mjbots_mjlib//mjlib/micro:error_code",
     "@com_github_mjbots_mjlib//mjlib/micro:persistent_config",
     "@com_github_mjbots_mjlib//mjlib/micro:pool_ptr",
     "@com_github_mjbots_mjlib//mjlib/micro:telemetry_manager",
@@ -123,12 +165,12 @@ MOTEUS_DEPS = [
 g4_mbed_binary(
     name = "moteus",
     srcs = MOTEUS_SOURCES + [
-        "stm32g4_async_uart.h",
-        "stm32g4_async_uart.cc",
         "stm32g4_flash.h",
         "fdcan.h",
         "fdcan.cc",
         "fdcan_micro_server.h",
+        "multi_transport_datagram_server.h",
+        "uart_fdcanusb_micro_server.h",
     ],
     deps = MOTEUS_DEPS,
     linker_script = "stm32g474.ld",
@@ -170,8 +212,14 @@ genrule(
 cc_test(
     name = "test",
     srcs = [
+        "test/bldc_servo_control_test.cc",
+        "test/bldc_servo_position_test.cc",
         "test/foc_test.cc",
         "test/math_test.cc",
+        "test/motor_position_test.cc",
+        "test/stm32_i2c_timing_test.cc",
+        "test/bissc_extract_test.cc",
+        "test/aksim2_validator_test.cc",
         "test/torque_model_test.cc",
         "test/test_main.cc",
     ],
@@ -182,8 +230,30 @@ cc_test(
         ":common",
         "@boost//:test",
         "@fmt",
+        "@com_github_mjbots_mjlib//mjlib/micro:test_fixtures",
     ],
     size = "small",
+)
+
+cc_test(
+    name = "slow_test",
+    srcs = [
+        "test/motor_model.h",
+        "test/simulation_fixture.h",
+        "test/simulation_dynamometer_test.cc",
+        "test/simulation_hall_misalign_test.cc",
+        "test/simulation_regen_test.cc",
+        "test/simulation_test.cc",
+        "test/spmsm_motor_simulator.h",
+        "test/test_main.cc",
+    ],
+    deps = [
+        ":common",
+        "@boost//:test",
+        "@fmt",
+        "@com_github_mjbots_mjlib//mjlib/micro:test_fixtures",
+    ],
+    size = "medium",
 )
 
 cc_binary(
@@ -191,6 +261,42 @@ cc_binary(
     srcs = ["multiplex_tool_main.cc"],
     deps = [
         "@com_github_mjbots_mjlib//mjlib/multiplex:libmultiplex_tool",
+    ],
+)
+
+cc_binary(
+    name = "hall_filter_test",
+    srcs = [
+        "test/hall_filter_test.cc",
+    ],
+    testonly = True,
+    deps = [
+        "@boost//:test",
+        "//fw:common",
+        "@com_github_mjbots_mjlib//mjlib/base:clipp",
+        "@com_github_mjbots_mjlib//mjlib/base:clipp_archive",
+        "@com_github_mjbots_mjlib//mjlib/base:fail",
+        "@com_github_mjbots_mjlib//mjlib/base:visitor",
+        "@com_github_mjbots_mjlib//mjlib/micro:persistent_config",
+        "@com_github_mjbots_mjlib//mjlib/micro:test_fixtures",
+    ],
+)
+
+cc_binary(
+    name = "encoder_bandwidth_test",
+    srcs = [
+        "test/encoder_bandwidth_test.cc",
+    ],
+    testonly = True,
+    deps = [
+        "@boost//:test",
+        "//fw:common",
+        "@com_github_mjbots_mjlib//mjlib/base:clipp",
+        "@com_github_mjbots_mjlib//mjlib/base:clipp_archive",
+        "@com_github_mjbots_mjlib//mjlib/base:fail",
+        "@com_github_mjbots_mjlib//mjlib/base:visitor",
+        "@com_github_mjbots_mjlib//mjlib/micro:persistent_config",
+        "@com_github_mjbots_mjlib//mjlib/micro:test_fixtures",
     ],
 )
 
@@ -202,15 +308,60 @@ py_test(
         "test/dummy_host_test.py",
     ],
     deps = [
+        ":hall_filter_test",
+        ":encoder_bandwidth_test",
     ],
     size = "small",
 )
 
+py_test(
+    name = "hall_regression_test",
+    srcs = [
+        "test/hall_regression_test.py",
+    ],
+    deps = [
+        ":hall_filter_test",
+    ],
+    args = [
+        "--binary", "$(location :hall_filter_test)",
+        "--datafile", "$(rootpath :test/data/20250616-back-and-forth.dat.gz)",
+    ],
+    size = 'medium',
+    # Excluded from host_ubsan via travis-ci.sh: under UBSan
+    # instrumentation this test takes ~10 minutes, well past any
+    # reasonable CI budget.
+    tags = ["no_ubsan"],
+    data = [
+        "test/data/20250616-back-and-forth.dat.gz",
+        "test/data/20250616-hboard-cycle.dat.gz",
+        "test/data/20250616-speed-cycle.dat.gz",
+        "test/data/20250616-bnforth-highaccel.dat.gz",
+        "test/data/20250616-hboard-manual.dat.gz",
+        "test/data/20250615-new-slow.dat.gz",
+    ],
+)
+
+py_test(
+    name = "encoder_bw_regression_test",
+    srcs = [
+        "test/encoder_bw_regression_test.py",
+    ],
+    deps = [
+        ":encoder_bandwidth_test",
+    ],
+    args = [
+        "--binary", "$(location :encoder_bandwidth_test)",
+    ],
+    size = "medium",
+)
 
 test_suite(
     name = "host",
     tests = [
         "test",
+        "slow_test",
         "dummy_host_test",
+        "hall_regression_test",
+        "encoder_bw_regression_test",
     ],
 )

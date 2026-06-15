@@ -1,4 +1,4 @@
-// Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,25 +20,6 @@ namespace {
 struct MoteusErrorCategory : mjlib::micro::error_category {
   const char* name() const noexcept override { return "moteus"; }
   std::string_view message(int condition) const override {
-    switch (static_cast<errc>(condition)) {
-      case errc::kSuccess: return "success";
-      case errc::kDmaStreamTransferError: return "dma stream transfer error";
-      case errc::kDmaStreamFifoError: return "dma stream fifo error";
-      case errc::kUartOverrunError: return "uart overrun error";
-      case errc::kUartFramingError: return "uart framing error";
-      case errc::kUartNoiseError: return "uart noise error";
-      case errc::kUartBufferOverrunError: return "uart buffer overrun";
-      case errc::kUartParityError: return "uart parity error";
-      case errc::kCalibrationFault: return "calibration fault";
-      case errc::kMotorDriverFault: return "motor driver fault";
-      case errc::kOverVoltage: return "over voltage";
-      case errc::kEncoderFault: return "encoder fault";
-      case errc::kMotorNotConfigured: return "motor not configured";
-      case errc::kPwmCycleOverrun: return "pwm cycle overrun";
-      case errc::kOverTemperature: return "over temperature";
-      case errc::kStartOutsideLimit: return "start outside limit";
-      case errc::kUnderVoltage: return "under voltage";
-    }
     return "unknown";
   }
 };

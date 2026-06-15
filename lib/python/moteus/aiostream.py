@@ -1,4 +1,4 @@
-# Copyright 2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,16 @@ import threading
 from typing import List, Optional, Union
 
 async def _async_set_future(fut, value):
+    if fut.done():
+        # We must have been canceled.
+        return
     fut.set_result(value)
+
+
+async def _async_set_future_exc(fut, exc):
+    if fut.done():
+        return
+    fut.set_exception(exc)
 
 
 def _run_queue(q):
@@ -31,9 +40,17 @@ def _run_queue(q):
             # We use a timeout just so things like
             # KeyboardInterrupt can fire.
             item = q.get(block=True, timeout=0.05)
-            item()
         except queue.Empty:
-            pass
+            continue
+        # Defense-in-depth: even though the read/write closures below
+        # already catch exceptions and forward them to their futures,
+        # an unrelated bug in a callback must not silently kill the
+        # worker thread and leave every future caller hung.
+        try:
+            item()
+        except Exception:
+            import traceback
+            traceback.print_exc()
 
 
 class AioStream:
@@ -43,6 +60,8 @@ class AioStream:
         self._write_data = b''
         self._read_queue = queue.Queue()
         self._write_queue = queue.Queue()
+        self._read_lock = threading.Lock()
+        self._write_lock = threading.Lock()
 
         self._read_thread = threading.Thread(
             target=self._read_child, daemon=True)
@@ -58,32 +77,75 @@ class AioStream:
 
         while True:
             f = loop.create_future()
+            skip = [False]
 
             def do_read():
-                result = self.fd.read(remaining)
-                asyncio.run_coroutine_threadsafe(_async_set_future(f, result), loop)
+                # This will run in the background thread.
+                with self._read_lock:
+                    if skip[0]:
+                        return
+
+                    try:
+                        result = self.fd.read(remaining)
+                    except BaseException as e:
+                        # Forward the failure to the awaiting coroutine
+                        # rather than letting the worker thread die
+                        # silently and hanging the caller forever.
+                        asyncio.run_coroutine_threadsafe(
+                            _async_set_future_exc(f, e), loop)
+                        return
+                    asyncio.run_coroutine_threadsafe(_async_set_future(f, result), loop)
 
             self._read_queue.put_nowait(do_read)
-            this_round = await f
+            try:
+                this_round = await f
+            except asyncio.CancelledError:
+                with self._read_lock:
+                    skip[0] = True
+
+                raise
+
             accumulated_result += this_round
             remaining -= len(this_round)
             if not block or remaining == 0:
                 return accumulated_result
+            # Underlying RawIOBase signals EOF with a 0-byte read.
+            # Returning what we've got so far matches the standard
+            # short-read-on-EOF semantics and avoids spinning the
+            # worker thread on a closed peer.
+            if len(this_round) == 0:
+                return accumulated_result
 
     def write(self, data: Union[bytearray, bytes, memoryview]) -> int:
         self._write_data += data
+        return len(data)
 
-    async def drain(self, ) -> int:
+    async def drain(self) -> int:
         self._write_data, write_data = b'', self._write_data
         loop = asyncio.get_event_loop()
         f = loop.create_future()
+        skip = [False]
 
         def do_write():
-            self.fd.write(write_data)
-            asyncio.run_coroutine_threadsafe(_async_set_future(f, True), loop)
+            with self._write_lock:
+                if skip[0]:
+                    return
+                try:
+                    self.fd.write(write_data)
+                except BaseException as e:
+                    asyncio.run_coroutine_threadsafe(
+                        _async_set_future_exc(f, e), loop)
+                    return
+                asyncio.run_coroutine_threadsafe(_async_set_future(f, True), loop)
 
         self._write_queue.put_nowait(do_write)
-        result = await f
+        try:
+            result = await f
+        except asyncio.CancelledError:
+            with self._write_lock:
+                skip[0] = True
+            raise
+        return len(write_data)
 
     def _read_child(self):
         _run_queue(self._read_queue)

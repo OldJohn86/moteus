@@ -1,4 +1,4 @@
-// Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,206 +14,202 @@
 
 #pragma once
 
+#include "mbed.h"
+
+#include "fw/millisecond_timer.h"
+
 namespace moteus {
 
-// The measured version of MOTEUS_HW_REV
-extern volatile uint8_t g_measured_hw_rev;
+//////////////////////////////////////////
+// The following "families" are supported:
+//  moteus    - family 0
+//  moteus-n1 - family 1
+//  moteus-c1 - family 2
+//  moteus-x1 - family 3
+//
+// Each family has an independent hardware version timeline, and
+// possibly a different mechanism for verifying hardware version
+// compatibility.
 
-// r1 silk
-// #define MOTEUS_HW_REV 0
 
-// r2 silk
-// #define MOTEUS_HW_REV 1
+// This structure is filled in once the family and hardware version
+// are known.
+struct MoteusHwPins {
+  PinName pwm1 = PA_0_ALT0;
+  PinName pwm2 = PA_1_ALT0;
+  PinName pwm3 = PA_2_ALT0;
 
-// r3 silk
-// #define MOTEUS_HW_REV 2
+  PinName drv8323_enable = NC;
+  PinName drv8323_hiz = NC;
+  PinName drv8323_cs = NC;
 
-// r4.1 silk
-// #define MOTEUS_HW_REV 3
+  PinName drv8323_mosi = NC;
+  PinName drv8323_miso = NC;
+  PinName drv8323_sck = NC;
+  PinName drv8323_fault = NC;
 
-// r4.2 and r4.3 silk
-// #define MOTEUS_HW_REV 4
+  PinName debug_led1 = NC;
+  PinName power_led = NC;
 
-// r4.4 silk
-// #define MOTEUS_HW_REV 5
+  PinName current1 = NC;
+  PinName current2 = NC;
+  PinName current3 = NC;
 
-// The most recent version of the HW.
-#ifndef MOTEUS_HW_REV
-// r4.5 silk
-#define MOTEUS_HW_REV 6
-#endif
+  PinName vsense = NC;
+  PinName tsense = PA_9;
 
-// The mapping between MOTEUS_HW_REV and the version pins on the
-// board.
-#if defined(TARGET_STM32G4)
-constexpr int kHardwareInterlock[] = {
-  -1,  // r1 (never printed for g4)
-  -1,  // r2 (never printed for g4)
-  -1,  // r3 (never printed for g4)
-  0,   // r4.1
-  0,   // r4.2/r4.3 (unfortunately, indistinguishable from the interlock)
-  1,   // r4.4
-  2,   // r4.5
+  PinName msense = NC;
+
+  float vsense_adc_scale = 0.0f;
+
+  PinName as5047_cs = NC;
+
+  PinName can_td = NC;
+  PinName can_rd = NC;
+
+  PinName debug1 = NC;
+  PinName debug2 = NC;
+  PinName debug_dac = PA_4;
+
+  uint32_t model_number = 0;
+
+  uint32_t firmware_version = 0x000105;
+
+  // Each board has a power limit curve, below a bus voltage V_l, the
+  // P_l power limit is used.  Above bus voltage V_h, P_h power limit
+  // is used.  Between, the power limit is linearly interpolated.  All
+  // power limits are normalized to 30kHz PWM.
+  float power_P_l_W = 0.0f;
+  float power_V_l = 24.0f;
+  float power_P_h_W = 0.0f;
+  float power_V_h = 34.0f;
 };
-#else
-constexpr int kHardwareInterlock[] = {
-  0,   // r1
-  1,   // r2
-  2,   // r3 & r3.1
-  -1,  // never printed for f4
-  -1,  // never printed for f4
-  -1,  // never printed for f4
-  -1,  // never printed for f4
-};
-#endif
 
-// This firmware is compatible with the following hardware revisions.
-constexpr int kCompatibleHwRev[] = {
-  // 3 isn't compatible, but we forgot to rev the version pins
-  3,
-  4, 5,
-  6,
+
+struct FamilyAndVersion {
+  int family = 0;
+  int hw_version = 0;
+  int hw_pins = 0;
 };
 
-#define DRV8323_ENABLE PA_3
+// Return what family we are executing on.
+FamilyAndVersion DetectMoteusFamily(MillisecondTimer*);
 
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#else
-#define DRV8323_HIZ PB_7
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 3
-#define DRV8323_CS PC_4
-#endif
-
-#define DRV8323_MOSI PA_7
-#define DRV8323_MISO PA_6
-#define DRV8323_SCK PA_5
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 3
-#define DRV8323_FAULT PB_6
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 3
-#define DEBUG_LED1 PF_0
-#define POWER_LED PF_1
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 3
-#define MOTEUS_DEBUG_UART_OUT PB_3
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 3
-#define HWREV_PIN0 PC_6
-#define HWREV_PIN1 PA_15
-#define HWREV_PIN2 PC_13
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 3
-// We've picked these particular pins so that all 3 channels are one
-// of the "slow" channels so they will have similar analog performance
-// characteristics.
-
-// ADC3
-#define MOTEUS_CURRENT1 PB_0_ALT0
-// ADC1
-#define MOTEUS_CURRENT2 PB_1
-// ADC2
-#define MOTEUS_CURRENT3 PB_2
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV == 3
-#define MOTEUS_VSENSE PA_8
-#elif MOTEUS_HW_REV >= 4
-// Here, the vsense does depend on the hardware version, but it is
-// detected at runtime between PA_8 (r4) and PB_12 (r5+)
-#define MOTEUS_VSENSE PA_8
-#define MOTEUS_VSENSE_5_AND_LATER PB_12_ALT0
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 3
-#define MOTEUS_TSENSE PA_9
-#endif
-
-#if MOTEUS_HW_REV <= 3
-#define MOTEUS_MSENSE NC
-#elif MOTEUS_HW_REV >= 4
-// Here, msense does depend on the hardware version, but it is
-// detected at runtime between PA_8 and PB_12.
-#define MOTEUS_MSENSE PB_12
-#define MOTEUS_MSENSE_5_AND_LATER PA_8
-#endif
-
-#ifndef MOTEUS_CURRENT_SENSE_OHM
-#if MOTEUS_HW_REV <= 1
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 2
-#define MOTEUS_CURRENT_SENSE_OHM 0.0005f
-#endif
-#endif
-
-#ifndef MOTEUS_VSENSE_ADC_SCALE
-#define MOTEUS_VSENSE_ADC_SCALE_PRE6 0.00884f
-#define MOTEUS_VSENSE_ADC_SCALE_POST6 0.017947f
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#else
-#define MOTEUS_UART_TX PC_10
-#define MOTEUS_UART_RX PC_11
-#define MOTEUS_UART_DIR NC
-#endif
-
-#define MOTEUS_AS5047_MOSI PB_15
-#define MOTEUS_AS5047_MISO PB_14
-#define MOTEUS_AS5047_SCK PB_13
-
-#if MOTEUS_HW_REV <= 2
-#error "Not suppported"
-#elif MOTEUS_HW_REV >= 3
-#define MOTEUS_AS5047_CS PB_11
-#endif
-
-#if MOTEUS_HW_REV >= 3
-#define MOTEUS_CAN_TD PA_12
-#define MOTEUS_CAN_RD PA_11
-#endif
-
-#if MOTEUS_HW_REV <= 2
-#error "Not supported"
-#elif MOTEUS_HW_REV >= 3
-#define MOTEUS_DEBUG1 PC_14
-#define MOTEUS_DEBUG2 PC_15
-#endif
-
-#define MOTEUS_DEBUG_DAC PA_4
-
-#if defined(TARGET_STM32G4)
-#define MOTEUS_CCM_ATTRIBUTE __attribute__ ((section (".ccmram")))
-#else
-#error "Unknown target"
-#endif
+MoteusHwPins FindHardwarePins(FamilyAndVersion);
 
 
-#define MOTEUS_MODEL_NUMBER ((MOTEUS_HW_REV) << 8 | 0x00)
-#define MOTEUS_FIRMWARE_VERSION 0x000100
+// The "FIRMWARE_VERSION" is a misnomer.  It instead is the equivalent
+// of an ABI version, and is incremented when configuration values
+// change in a way that would not result in equivalent behavior across
+// an upgrade/downgrade.
+
+// Version history:
+
+// # 0x0101 #
+//
+// * Fixed the calculation of feedforward voltage to have the correct
+//   sign for the velocity component.  Previous firmwares,
+//   inappropriately applied a negative feedforward term, which
+//   counteracted rotation instead of being an actual feedforward.
+
+// # 0x0102 #
+//
+// * Removed servo.feedforward_scale entirely
+
+// # 0x0103 #
+//
+// * Added servo.pwm_scale, and for r4.8 boards changed the default
+//   value of pwm_comp_off / pwm_comp_mag.
+
+// # 0x0104 #
+//
+// * Added configurable PWM rates, which changed default values of
+//   pwm_comp_mag and pwm_comp_off.
+
+// # 0x0105 #
+//
+// * Switched to a new encoder and position subsystem.
+
+// # 0x0106 #
+//
+// * Switched aux?.sources.x.i2c.poll_ms to poll_rate_us to match UART
+//   and give more resolution.
+
+// # 0x0107 #
+//
+// * Fixed motor_position.output.sign == -1 so that DQ commands for
+//   voltage or current are inverted, so that positive Q axis voltage
+//   or current results in positive speed
+
+// # 0x0108 #
+//
+// * The default value of `servo.bemf_feedforward` was changed from
+//   1.0 to 0.0.
+
+// # 0x0109 #
+//
+// * Commutation compensation now interpolates, which means old tables
+//   need to be upgraded during the flash process.
+// * The motor thermistor value is now configurable and defaults to
+//   10k instead of 47k.
+
+// # 0x010a #
+//
+// * servo.max_power_W now defaults to NaN, and if present is used as
+//   an absolute value rather than as a "nominal" value.
+
+// # 0x010b #
+//
+// * servo.flux_brake_margin_voltage replaces
+//   servo.flux_brake_min_voltage
+// * servo.temperature_margin replaces servo.derate_temperature
+// * servo.motor_temperature_margin replaces
+//   servo.motor_derate_temperature
+
+// # 0x010c #
+//
+// * motor_position.sources.x.pll_filter_hz was previously specified
+//   in terms of a somewhat arbitrary "natural frequency", but is now
+//   specified in terms of the 3dB cutoff frequency
+
+// # 0x010d #
+//
+// * aux?.rs422 replaced aux?.uart.rs422 as now the RS422 transceiver
+//   can be enabled for both UART and BiSS-C encoders
+
+// # 0x010e #
+//
+// * servo.pid_dq.kp/ki/max_desired_rate replaced by servo.pid_dq_hz
+//   and servo.max_current_desired_rate.  PI gains are now computed
+//   automatically from the bandwidth and motor parameters.
+
+// # 0x010000
+//
+// No functional changes.  ABI release 1.0.0
+
+// # 0x010100
+//
+// * The drv8323_conf reg4 calculation now maps idriven_ls_ma through the
+//   DRV8353 pull-down (idriven) table instead of the pull-up (idrivep)
+//   table.  DRV8353-board idriven_ls_ma defaults were adjusted and
+//   moteus_tool migrates stored configs so the gate-drive register
+//   output is unchanged across the upgrade.
+// * The gate-driver family routing was corrected: moteus-c1 (family 2,
+//   a DRV8323) now uses the drv8323 register path and moteus-n1
+//   (family 1, a DRV8353) uses the drv8353 register path.  These were
+//   swapped by an inadvertent "family == 1" clause in the c1-support
+//   commit.  c1's defaults are adjusted (and configs migrated) to keep
+//   its register output unchanged; n1's register output is restored to
+//   what it was before the c1-support commit.
+//
+// ABI release 1.1.0
+
+#define MOTEUS_MODEL_NUMBER 0x0000
+#define MOTEUS_FIRMWARE_VERSION 0x010100
+
+extern MoteusHwPins g_hw_pins;
+
+// Ensure the DRV8323 is turned off.
+void MoteusEnsureOff();
 
 }

@@ -1,4 +1,4 @@
-# Copyright 2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,3 +45,12 @@ class AioSerial(AioStream):
             serial.win32.SetCommTimeouts(self.serial._port_handle, ctypes.byref(timeouts))
 
         super(AioSerial, self).__init__(self.serial)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+    def close(self):
+        self.serial.close()

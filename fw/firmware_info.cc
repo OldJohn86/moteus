@@ -1,4 +1,4 @@
-// Copyright 2019-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 #include "fw/firmware_info.h"
 
+#include "fw/measured_hw_rev.h"
 #include "fw/moteus_hw.h"
 
 namespace moteus {
@@ -23,6 +24,7 @@ struct Info {
   uint32_t version = 0;
   std::array<uint32_t, 3> serial_number = {};
   uint32_t model = 0;
+  uint8_t family = g_measured_hw_family;
   uint8_t hwrev = g_measured_hw_rev;
 
   template <typename Archive>
@@ -30,14 +32,19 @@ struct Info {
     a->Visit(MJ_NVP(version));
     a->Visit(MJ_NVP(serial_number));
     a->Visit(MJ_NVP(model));
+    a->Visit(MJ_NVP(family));
     a->Visit(MJ_NVP(hwrev));
   }
 };
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overread"
+
 class FirmwareInfo::Impl {
  public:
-  Impl(mjlib::micro::TelemetryManager& telemetry, uint32_t version,
+  Impl(mjlib::micro::TelemetryManager& telemetry,
+       uint32_t version,
        uint32_t model) {
     info_.version = version;
     info_.model = model;
@@ -50,9 +57,9 @@ class FirmwareInfo::Impl {
 #error "Unknown target"
 #endif
                                          );
+
     std::memcpy(&info_.serial_number[0], device_signature,
                 sizeof(uint32_t) * 3);
-
     telemetry.Register("firmware", &info_);
   }
 
@@ -67,6 +74,10 @@ FirmwareInfo::FirmwareInfo(mjlib::micro::Pool& pool,
 
 FirmwareInfo::~FirmwareInfo() {}
 
+uint32_t FirmwareInfo::model_number() const {
+  return impl_->info_.model;
+}
+
 uint32_t FirmwareInfo::firmware_version() const {
   return impl_->info_.version;
 }
@@ -78,5 +89,7 @@ FirmwareInfo::SerialNumber FirmwareInfo::serial_number() const {
   }
   return result;
 }
+
+#pragma GCC diagnostic pop
 
 }

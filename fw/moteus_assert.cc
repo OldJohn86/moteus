@@ -1,4 +1,4 @@
-// Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,17 +33,20 @@ extern "C" {
 void mbed_die(void) {
   // We want to ensure the motor controller is disabled and flash an
   // LED which exists.
-  gpio_t power;
-  gpio_init_out(&power, DRV8323_HIZ);
-  gpio_write(&power, 0);
+  moteus::MoteusEnsureOff();
 
-  // Also, disable the DRV8323 entirely, because, hey, why not.
-  gpio_t enable;
-  gpio_init_out(&enable, DRV8323_ENABLE);
-  gpio_write(&enable, 0);
+  // If we got here before g_hw_pins was populated (e.g. an assertion
+  // fired during family detection), debug_led1 is NC.  Calling
+  // gpio_init_out with NC leaves the gpio_t's mask/reg_set/reg_clr
+  // uninitialized, and the subsequent gpio_write would dereference a
+  // garbage stack pointer.  Just spin in that case.
+  const auto led_pin = moteus::g_hw_pins.debug_led1;
+  if (led_pin == NC) {
+    for (;;) {}
+  }
 
   gpio_t led;
-  gpio_init_out(&led, DEBUG_LED1);
+  gpio_init_out(&led, led_pin);
 
   // Now flash an actual LED.
   for (;;) {

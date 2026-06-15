@@ -1,4 +1,4 @@
-// Copyright 2019-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -57,11 +57,23 @@ class FDCan {
     int time_seg2 = -1;
   };
 
+  struct FilterConfig {
+    FilterAction global_std_action = FilterAction::kAccept;
+    FilterAction global_ext_action = FilterAction::kAccept;
+    FilterAction global_remote_std_action = FilterAction::kAccept;
+    FilterAction global_remote_ext_action = FilterAction::kAccept;
+
+    const Filter* begin = nullptr;
+    const Filter* end = nullptr;
+  };
+
   struct Options {
     PinName td = NC;
     PinName rd = NC;
     int slow_bitrate = 1000000;
     int fast_bitrate = 5000000;
+
+    FilterConfig filters;
 
     bool automatic_retransmission = false;
     bool remote_frame = false;
@@ -70,13 +82,9 @@ class FDCan {
     bool restricted_mode = false;
     bool bus_monitor = false;
 
-    FilterAction global_std_action = FilterAction::kAccept;
-    FilterAction global_ext_action = FilterAction::kAccept;
-    FilterAction global_remote_std_action = FilterAction::kAccept;
-    FilterAction global_remote_ext_action = FilterAction::kAccept;
-
-    const Filter* filter_begin = nullptr;
-    const Filter* filter_end = nullptr;
+    bool delay_compensation = false;
+    uint32_t tdc_offset = 0;
+    uint32_t tdc_filter = 0;
 
     // If any members of this are non-negative, force them to be used
     // instead of the auto-calculated values.
@@ -103,12 +111,16 @@ class FDCan {
     SendOptions() {}
   };
 
+  void ConfigureFilters(const FilterConfig&);
+
   void Send(uint32_t dest_id,
             std::string_view data,
             const SendOptions& = SendOptions());
 
   /// @return true if a packet was available.
   bool Poll(FDCAN_RxHeaderTypeDef* header, mjlib::base::string_span);
+
+  void RecoverBusOff();
 
   FDCAN_ProtocolStatusTypeDef status();
 
@@ -123,11 +135,14 @@ class FDCan {
   static int ParseDlc(uint32_t dlc_code);
 
  private:
-  const Options options_;
+  void Init();
+
+  Options options_;
   Config config_;
 
   FDCAN_GlobalTypeDef* can_ = nullptr;
   FDCAN_HandleTypeDef hfdcan1_;
+  FDCAN_ProtocolStatusTypeDef status_result_ = {};
   uint32_t last_tx_request_ = 0;
 };
 

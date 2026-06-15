@@ -1,6 +1,6 @@
 /*
 
-// Copyright 2018-2019 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ Our memory layout looks like the following:
     get everything set up, but once there, it can receive a new
     firmware image over the RS485 protocol.
 
-0x801000 - application
+0x8010000 - application
 
-0x807f00 - persistent settings
+0x807f000 - persistent settings
 
 */
 
@@ -43,7 +43,7 @@ MEMORY
   FLASH_ISR (rx) : ORIGIN = 0x8000000, LENGTH = 0x004000
 }
 
-MultiplexBootloader = 0x800c000;
+MultiplexBootloader = 0x800c001;
 
 SECTIONS
 {

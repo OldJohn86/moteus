@@ -1,4 +1,4 @@
-// Copyright 2015-2018 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ class SystemInfo {
   ~SystemInfo();
 
   void PollMillisecond();
+  void SetCanResetCount(uint32_t);
+
+  uint32_t millisecond_counter() const;
 
   // Increment this from an idle thread.
   static volatile uint32_t idle_count;

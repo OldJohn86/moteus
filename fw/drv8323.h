@@ -1,4 +1,4 @@
-// Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,11 +22,49 @@
 #include "mjlib/micro/pool_ptr.h"
 #include "mjlib/micro/telemetry_manager.h"
 
+#include "fw/ccm.h"
+#include "fw/measured_hw_rev.h"
 #include "fw/millisecond_timer.h"
 #include "fw/motor_driver.h"
 #include "fw/moteus_hw.h"
+#include "fw/stm32_digital_output.h"
 
 namespace moteus {
+
+// Determine the current-shunt amplifier settling time.  This is
+// gain-dependent because the amp's closed-loop bandwidth scales
+// inversely with gain.  The DRV8323/DRV8353 datasheet §7.5 (CSA,
+// t_SET, V_O_step = 0.5 V) gives:
+//
+//     gain (V/V) | datasheet t_SET (0.5 V step)
+//          5     |   250 ns
+//         10     |   500 ns
+//         20     |  1000 ns
+//         40     |  2000 ns
+//
+// The 0.5 V test condition is ~3× smaller than what the amp actually
+// sees in this application: the PWM ripple at the shunt is V_bus / (4
+// × L × f_pwm) × R_shunt × G, which for a typical 24 V / 30 µH / 30
+// kHz / 5 mΩ / 20 V/V combination is ~0.7 V — and worst-case
+// high-current transients can push that several times higher.
+// Empirically, with G=20 we needed ≥1.5 µs (a 500ns margin over the
+// datasheet) to suppress the residual q_A bursts that remain after
+// the limiter is switched to proportional clipping; below that the
+// loop visibly hunts at the rail boundary.  We extend the same 500ns
+// margin to the other gains as well.
+//
+// This is combined with kIsrSampleTime via std::max at the call site
+// to produce the value that RateConfig bakes into min_pwm/max_pwm.
+constexpr float CsaSettlingTime(int csa_gain) {
+  switch (csa_gain) {
+    case 5:  return 0.75e-6f;  // datasheet + 500ns
+    case 10: return 1.00e-6f;  // datasheet + 500ns
+    case 20: return 1.50e-6f;  // datasheet + 500ns
+    case 40: return 2.50e-6f;  // datasheet + 500ns
+  }
+  // Conservative fallback — covers any unrecognized csa_gain.
+  return 3.00e-6f;
+}
 
 class Drv8323 : public MotorDriver {
  public:
@@ -51,12 +89,30 @@ class Drv8323 : public MotorDriver {
   // Turn on or off the driver.  When turning it on, all SPI
   // parameters are set from configuration and in this case it may not
   // be invoked from an interrupt context.
-  void Enable(bool) override;
+  //
+  // Return true for success, false for failure.
+  EnableResult StartEnable(bool) override;
 
-  void Power(bool) override;
-  bool fault() override;
+  void PowerOn() override MOTEUS_CCM_ATTRIBUTE;
+  void PowerOff() override MOTEUS_CCM_ATTRIBUTE;
+
+  bool fault() override MOTEUS_CCM_ATTRIBUTE;
 
   void PollMillisecond();
+
+  // The maximum voltage that can be observed at the sense resistor
+  // while remaining within the range of the device (and its
+  // configured gains).
+  float max_sense_V() override;
+
+  // The current configured sense amplifier gain.
+  float i_gain() override;
+
+  // The CSA settling time at the configured gain.
+  float csa_settling_time() override;
+
+  void SetConfigUpdateCallback(
+      mjlib::base::inplace_function<void()>) override;
 
   struct Status {
     // Fault Status Register 1
@@ -72,6 +128,8 @@ class Drv8323 : public MotorDriver {
     bool vds_hc = false;   // vds overcurrent fault on C high
     bool vds_lc = false;   // vds overcurrent fault on C low
 
+    uint16_t fsr1 = 0;
+
     // Fault Status Register 2
     bool sa_oc = false;   // overcurrent on phase A sense amp
     bool sb_oc = false;   // overcurrent on phase B sense amp
@@ -84,6 +142,8 @@ class Drv8323 : public MotorDriver {
     bool vgs_lb = false;  // gate drive fault on B low
     bool vgs_hc = false;  // gate drive fault on C high
     bool vgs_lc = false;  // gate drive fault on C low
+
+    uint16_t fsr2 = 0;
 
     // Whether a fault was signaled over the hard-line.
     bool fault_line = false;
@@ -114,6 +174,8 @@ class Drv8323 : public MotorDriver {
       a->Visit(MJ_NVP(vds_hc));
       a->Visit(MJ_NVP(vds_lc));
 
+      a->Visit(MJ_NVP(fsr1));
+
       a->Visit(MJ_NVP(sa_oc));
       a->Visit(MJ_NVP(sb_oc));
       a->Visit(MJ_NVP(sc_oc));
@@ -125,6 +187,8 @@ class Drv8323 : public MotorDriver {
       a->Visit(MJ_NVP(vgs_lb));
       a->Visit(MJ_NVP(vgs_hc));
       a->Visit(MJ_NVP(vgs_lc));
+
+      a->Visit(MJ_NVP(fsr2));
 
       a->Visit(MJ_NVP(fault_line));
       a->Visit(MJ_NVP(power));
@@ -170,27 +234,81 @@ class Drv8323 : public MotorDriver {
 
 
     // Gate Drive HS Register
-    uint16_t idrivep_hs_ma = 370;
-    uint16_t idriven_hs_ma = 740;
+
+    // hw rev 7 boards use a drv8353, which is sensitive to damage
+    // ringing on the gate drives.  This version requires lower gate
+    // drive strength to avoid damage.  hw rev 8 boards have a better
+    // layout and an additional gate drive resistor which allows them
+    // to go higher.
+    uint16_t idrivep_hs_ma =
+        g_measured_hw_family == 0 ?
+         ((g_measured_hw_rev <= 6) ? 370 :
+          (g_measured_hw_rev <= 7) ? 50 :
+          100) :
+        g_measured_hw_family == 1 ? 150 :
+        g_measured_hw_family == 2 ? 60 :
+        g_measured_hw_family == 3 ? 300 :
+        invalid_int();
+    uint16_t idriven_hs_ma =
+        g_measured_hw_family == 0 ?
+         ((g_measured_hw_rev <= 6) ? 740 :
+          (g_measured_hw_rev <= 7) ? 100 :
+          200) :
+        g_measured_hw_family == 1 ? 200 :
+        g_measured_hw_family == 2 ? 20 :
+        g_measured_hw_family == 3 ? 200 :
+        invalid_int();
 
 
     // Gate Drive LS Register
     bool cbc = true;  // Cycle-by cycle operation.
     uint16_t tdrive_ns = 1000;  // peak gate-current drive time
-    uint16_t idrivep_ls_ma = 370;
-    uint16_t idriven_ls_ma = 740;
+    uint16_t idrivep_ls_ma =
+        g_measured_hw_family == 0 ?
+         ((g_measured_hw_rev <= 6) ? 370 :
+          (g_measured_hw_rev <= 7) ? 50 :
+          100) :
+        g_measured_hw_family == 1 ? 150 :
+        g_measured_hw_family == 2 ? 60 :
+        g_measured_hw_family == 3 ? 850 :
+        invalid_int();
+    uint16_t idriven_ls_ma =
+        g_measured_hw_family == 0 ?
+         ((g_measured_hw_rev <= 6) ? 740 :
+          (g_measured_hw_rev <= 7) ? 200 :
+          600) :
+        g_measured_hw_family == 1 ? 100 :
+        g_measured_hw_family == 2 ? 20 :
+        g_measured_hw_family == 3 ? 1200 :
+        invalid_int();
 
 
     // OCP Control Register
     bool tretry = false;  // false = 4ms, true = 50us
-    uint16_t dead_time_ns = 50;
+    uint16_t dead_time_ns =
+        g_measured_hw_family == 0 ?
+         ((g_measured_hw_rev <= 6) ? 50 :
+          (g_measured_hw_rev <= 7) ? 200 :
+          50) :
+        g_measured_hw_family == 1 ? 50 :
+        g_measured_hw_family == 2 ? 50 :
+        g_measured_hw_family == 3 ? 50 :
+        invalid_int();
     OcpMode ocp_mode = OcpMode::kLatchedFault;
-    uint8_t ocp_deg_us = 4;  // valid options of 2, 4, 6, 8
+    uint8_t ocp_deg_us = 4;
 
     // hw rev 6 boards and later use a FET with roughly double the
     // Rdson.  We set a threshold that will trip only if we get well
     // over the rated 100A limit.
-    uint16_t vds_lvl_mv = (g_measured_hw_rev <= 5) ? 260 : 450;
+    uint16_t vds_lvl_mv =
+        g_measured_hw_family == 0 ?
+         ((g_measured_hw_rev <= 5) ? 260 :
+          (g_measured_hw_rev <= 7) ? 450 :
+          700) :
+        g_measured_hw_family == 1 ? 700 :
+        g_measured_hw_family == 2 ? 940 :
+        g_measured_hw_family == 3 ? 700 :
+        invalid_int();
 
 
     // CSA Control Register
@@ -234,11 +352,18 @@ class Drv8323 : public MotorDriver {
       a->Visit(MJ_NVP(dis_sen));
       a->Visit(MJ_NVP(sen_lvl_mv));
     }
+
+    static int invalid_int() {
+      MJ_ASSERT(false);
+      return 0;
+    }
   };
 
  private:
   class Impl;
   mjlib::micro::PoolPtr<Impl> impl_;
+
+  Stm32DigitalOutput hiz_;
 };
 
 }

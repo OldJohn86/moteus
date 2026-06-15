@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -73,8 +73,50 @@ class TestDynoFast(unittest.TestCase):
     def test_validate_position_wraparound(self):
         dyno('--validate_position_wraparound', '1')
 
+    def test_validate_position_reverse(self):
+        dyno('--validate_position_reverse', '1')
+
     def test_validate_stay_within(self):
         dyno('--validate_stay_within', '1')
+
+    def test_validate_max_slip(self):
+        dyno('--validate_max_slip', '1')
+
+    def test_validate_slip_stop_position(self):
+        dyno('--validate_slip_stop_position', '1')
+
+    def test_validate_slip_bounds(self):
+        dyno('--validate_slip_bounds', '1')
+
+    def test_validate_dq_ilimit(self):
+        dyno('--validate_dq_ilimit', '1')
+
+    def test_validate_power_limit(self):
+        dyno('--validate_power_limit', '1')
+
+    def test_validate_max_velocity(self):
+        dyno('--validate_max_velocity', '1')
+
+    def test_rezero(self):
+        dyno('--validate_rezero', '1')
+
+    def test_validate_voltage_mode_control(self):
+        dyno('--validate_voltage_mode_control', '1')
+
+    def test_validate_fixed_voltage_mode(self):
+        dyno('--validate_fixed_voltage_mode', '1')
+
+    def test_validate_fixed_voltage_mode_reverse(self):
+        dyno('--validate_fixed_voltage_mode_reverse', '1')
+
+    def test_validate_brake_mode(self):
+        dyno('--validate_brake_mode', '1')
+
+    def test_validate_velocity_accel_limits(self):
+        dyno('--validate_velocity_accel_limits', '1')
+
+    def test_validate_field_weakening_perf(self):
+        dyno('--validate_field_weakening_perf', '1')
 
 
 class TestDynoSlow(unittest.TestCase):
@@ -97,6 +139,6 @@ class TestDynoSlow(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    print("Set PS to 24V/5A!")
+    print("Set PSU to 24V/10A!")
 
     unittest.main()

@@ -1,4 +1,4 @@
-// Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,20 @@
 
 #pragma once
 
+#include "mjlib/micro/async_stream.h"
 #include "mjlib/micro/pool_ptr.h"
 #include "mjlib/multiplex/micro_server.h"
 
-#include "fw/as5047.h"
 #include "fw/bldc_servo.h"
-#include "fw/drv8323.h"
+#include "fw/clock_manager.h"
 #include "fw/firmware_info.h"
 #include "fw/millisecond_timer.h"
+#include "fw/system_info.h"
+#include "fw/uuid.h"
 
 namespace moteus {
+
+class MultiTransportDatagramServer;
 
 /// Glues together the various pieces of hardware that make a moteus
 /// controller board.
@@ -31,17 +35,21 @@ class MoteusController {
  public:
   MoteusController(mjlib::micro::Pool*,
                    mjlib::micro::PersistentConfig* config,
+                   mjlib::micro::CommandManager* command_manager,
                    mjlib::micro::TelemetryManager* telemetry_manager,
+                   mjlib::multiplex::MicroServer* multiplex_protocol,
+                   MultiTransportDatagramServer*,
+                   ClockManager*,
+                   SystemInfo*,
                    MillisecondTimer*,
-                   FirmwareInfo*);
+                   FirmwareInfo*,
+                   Uuid*);
   ~MoteusController();
 
   void Start();
   void Poll();
   void PollMillisecond();
 
-  AS5047* as5047();
-  Drv8323* drv8323();
   BldcServo* bldc_servo();
 
   mjlib::multiplex::MicroServer::Server* multiplex_server();

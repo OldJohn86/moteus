@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <array>
 #include <type_traits>
 
 #include "mjlib/base/visitor.h"
@@ -41,6 +42,30 @@ enum class errc {
   kOverTemperature = 38,
   kStartOutsideLimit = 39,
   kUnderVoltage = 40,
+  kConfigChanged = 41,
+  kThetaInvalid = 42,
+  kPositionInvalid = 43,
+  kDriverEnableFault = 44,
+  kStopPositionDeprecated = 45,
+  kTimingViolation = 46,
+  kBemfFeedforwardNoAccelLimit = 47,
+  kInvalidLimits = 48,
+  kPositionControlError = 49,
+  kVelocityControlError = 50,
+
+  // The following are not hard faults, but instead codes that are
+  // presented while in a control mode if some factor is limiting the
+  // total output.
+  kLimitMaxVelocity = 96,       // servo.max_velocity
+  kLimitMaxPower = 97,          // servo.max_power_W
+  kLimitMaxVoltage = 98,
+  kLimitMaxCurrent = 99,        // servo.max_current_A
+  kLimitFetTemperature = 100,   // servo.fault_temperature
+  kLimitMotorTemperature = 101, // servo.motor_fault_temperature
+  kLimitMaxTorque = 102,
+  kLimitPositionBounds = 103,   // servopos.position_min / servopos.position_max
+  kLimitFluxBraking = 104,      // flux braking is active
+  kLimitFieldWeakening = 105,   // field weakening is active
 };
 
 mjlib::micro::error_code make_error_code(errc);

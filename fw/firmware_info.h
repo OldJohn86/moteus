@@ -1,4 +1,4 @@
-// Copyright 2019-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ namespace moteus {
 class FirmwareInfo {
  public:
   FirmwareInfo(mjlib::micro::Pool&, mjlib::micro::TelemetryManager&,
-               uint32_t version, uint32_t model);
+               uint32_t version,
+               uint32_t model);
   ~FirmwareInfo();
 
   uint32_t model_number() const;

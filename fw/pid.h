@@ -1,4 +1,4 @@
-// Copyright 2015-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include "mjlib/base/limit.h"
 #include "mjlib/base/visitor.h"
 
-#include "fw/moteus_hw.h"
+#include "fw/ccm.h"
 
 namespace moteus {
 
@@ -100,13 +100,14 @@ class PID {
   struct ApplyOptions {
     float kp_scale = 1.0f;
     float kd_scale = 1.0f;
+    float ilimit_scale = 1.0f;
 
     ApplyOptions() {}
   };
 
   float Apply(float measured, float input_desired,
               float measured_rate, float input_desired_rate,
-              int rate_hz,
+              float period_s,
               ApplyOptions apply_options = {}) MOTEUS_CCM_ATTRIBUTE {
     float desired = {};
     float desired_rate = {};
@@ -114,7 +115,7 @@ class PID {
     // First apply max_desired_rate
     if (config_->max_desired_rate != 0.0f &&
         std::isfinite(state_->desired)) {
-      const float max_step = config_->max_desired_rate / rate_hz;
+      const float max_step = config_->max_desired_rate * period_s;
       const float proposed_step = input_desired - state_->desired;
       const float actual_step =
           mjlib::base::Limit(proposed_step, -max_step, max_step);
@@ -131,8 +132,8 @@ class PID {
     state_->error = measured - desired;
     state_->error_rate = measured_rate - desired_rate;
 
-    const float max_i_update = config_->iratelimit / rate_hz;
-    float to_update_i = state_->error * config_->ki / rate_hz;
+    const float max_i_update = config_->iratelimit * period_s;
+    float to_update_i = state_->error * config_->ki * period_s;
     if (max_i_update > 0.0f) {
       if (to_update_i > max_i_update) {
         to_update_i = max_i_update;
@@ -143,17 +144,19 @@ class PID {
 
     state_->integral += to_update_i;
 
-    if (state_->integral > config_->ilimit) {
-      state_->integral = config_->ilimit;
-    } else if (state_->integral < -config_->ilimit) {
-      state_->integral = -config_->ilimit;
+    const float ilimit = config_->ilimit * apply_options.ilimit_scale;
+    if (state_->integral > ilimit) {
+      state_->integral = ilimit;
+    } else if (state_->integral < -ilimit) {
+      state_->integral = -ilimit;
     }
 
     state_->p = apply_options.kp_scale * config_->kp * state_->error;
     state_->d = apply_options.kd_scale * config_->kd * state_->error_rate;
     state_->pd = state_->p + state_->d;
 
-    state_->command = config_->sign * (state_->pd + state_->integral);
+    state_->command = config_->sign *
+        (state_->pd + state_->integral);
 
     return state_->command;
   }

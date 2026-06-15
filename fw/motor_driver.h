@@ -1,4 +1,4 @@
-// Copyright 2018 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,46 @@
 
 #pragma once
 
+#include "mjlib/base/inplace_function.h"
+
 namespace moteus {
 
 class MotorDriver {
  public:
-  /// Turn on or off the driver.
-  virtual void Enable(bool) = 0;
+  enum EnableResult {
+    kDisabled,
+    kEnabled,
+    kEnabling1,
+    kEnabling2,
+    kEnabling3,
+    kCalibrateFailed,
+  };
+
+  /// Start the process of turning on or off the driver.
+  virtual EnableResult StartEnable(bool) = 0;
 
   /// Enable power to the output stage.
-  virtual void Power(bool) = 0;
+  virtual void PowerOn() = 0;
+  virtual void PowerOff() = 0;
 
   /// Return true if the driver is currently reporting a fault.
   virtual bool fault() = 0;
+
+  /// Return the maximum resistor sense voltage for the current
+  /// config.
+  virtual float max_sense_V() = 0;
+
+  /// Return the current configured sense amplifier gain.
+  virtual float i_gain() = 0;
+
+  /// Return the minimum time required for the current sense
+  /// amplifiers to settle.
+  virtual float csa_settling_time() = 0;
+
+  /// Register a callback to be invoked any time the configuration of
+  /// this module is changed.  Only one callback can be active.
+  virtual void SetConfigUpdateCallback(
+      mjlib::base::inplace_function<void()>) = 0;
 };
 
 }

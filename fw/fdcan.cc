@@ -1,4 +1,4 @@
-// Copyright 2019-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -92,6 +92,17 @@ FDCan::Rate ApplyRateOverride(FDCan::Rate base, FDCan::Rate overlay) {
 
 FDCan::FDCan(const Options& options)
     : options_(options) {
+  Init();
+}
+
+void FDCan::ConfigureFilters(const FilterConfig& filters) {
+  options_.filters = filters;
+  Init();
+}
+
+void FDCan::Init() {
+  const auto& options = options_;
+
   __HAL_RCC_FDCAN_CLK_ENABLE();
 
   {
@@ -150,14 +161,14 @@ FDCan::FDCan(const Options& options)
 
   can.Init.StdFiltersNbr =
       std::count_if(
-          options.filter_begin, options.filter_end,
+          options.filters.begin, options.filters.end,
           [](const auto& filter) {
             return (filter.action != FilterAction::kDisable &&
                     filter.type == FilterType::kStandard);
           });
   can.Init.ExtFiltersNbr =
       std::count_if(
-          options.filter_begin, options.filter_end,
+          options.filters.begin, options.filters.end,
           [](const auto& filter) {
             return (filter.action != FilterAction::kDisable &&
                     filter.type == FilterType::kExtended);
@@ -170,7 +181,7 @@ FDCan::FDCan(const Options& options)
   int standard_index = 0;
   int extended_index = 0;
   std::for_each(
-      options.filter_begin, options.filter_end,
+      options.filters.begin, options.filters.end,
       [&](const auto& filter) {
         if (filter.action == FilterAction::kDisable) {
           return;
@@ -212,8 +223,10 @@ FDCan::FDCan(const Options& options)
           }
           mbed_die();
         }();
-        sFilterConfig.FilterID1 = filter.id1;
-        sFilterConfig.FilterID2 = filter.id2;
+        const uint32_t mask =
+            filter.type == FilterType::kStandard ? 0x7FF : 0x1FFFFFFF;
+        sFilterConfig.FilterID1 = filter.id1 & mask;
+        sFilterConfig.FilterID2 = filter.id2 & mask;
 
         if (HAL_FDCAN_ConfigFilter(&can, &sFilterConfig) != HAL_OK)
         {
@@ -253,11 +266,25 @@ FDCan::FDCan(const Options& options)
      Reject non matching frames with STD ID and EXT ID */
   if (HAL_FDCAN_ConfigGlobalFilter(
           &can,
-          map_filter_action(options.global_std_action),
-          map_filter_action(options.global_ext_action),
-          map_remote_action(options.global_remote_std_action),
-          map_remote_action(options.global_remote_ext_action)) != HAL_OK) {
+          map_filter_action(options.filters.global_std_action),
+          map_filter_action(options.filters.global_ext_action),
+          map_remote_action(options.filters.global_remote_std_action),
+          map_remote_action(options.filters.global_remote_ext_action)) != HAL_OK) {
     mbed_die();
+  }
+
+  if (options.delay_compensation) {
+    if (HAL_FDCAN_ConfigTxDelayCompensation(
+            &can, options.tdc_offset, options.tdc_filter) != HAL_OK) {
+      mbed_die();
+    }
+    if (HAL_FDCAN_EnableTxDelayCompensation(&can) != HAL_OK) {
+      mbed_die();
+    }
+  } else {
+    if (HAL_FDCAN_DisableTxDelayCompensation(&can) != HAL_OK) {
+      mbed_die();
+    }
   }
 
   if (HAL_FDCAN_Start(&can) != HAL_OK) {
@@ -333,10 +360,14 @@ bool FDCan::Poll(FDCAN_RxHeaderTypeDef* header,
   return true;
 }
 
+void FDCan::RecoverBusOff() {
+  hfdcan1_.Instance->CCCR &= ~FDCAN_CCCR_INIT;
+}
+
+
 FDCAN_ProtocolStatusTypeDef FDCan::status() {
-  FDCAN_ProtocolStatusTypeDef result = {};
-  HAL_FDCAN_GetProtocolStatus(&hfdcan1_, &result);
-  return result;
+  HAL_FDCAN_GetProtocolStatus(&hfdcan1_, &status_result_);
+  return status_result_;
 }
 
 FDCan::Config FDCan::config() const {

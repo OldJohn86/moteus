@@ -1,6 +1,6 @@
 # -*- python -*-
 
-# Copyright 2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ filegroup(
     name = "datafiles",
     srcs = [
         "__init__.py",
+        "python_console_ast.py",
+        "registernoop.py",
         "version.py",
 
         "tview_main_window.ui",
@@ -38,14 +40,29 @@ filegroup(
 )
 
 py_library(
+    name = "python_console_ast",
+    srcs = ["python_console_ast.py"],
+    imports = [".."],
+)
+
+py_library(
     name = "tview",
     srcs = [
         "tview.py",
     ],
+    imports = [".."],
     deps = [
+        ":python_console_ast",
         "//lib/python/moteus",
     ],
     data = [
         ":datafiles",
     ],
+)
+
+py_test(
+    name = "python_console_ast_test",
+    srcs = ["test/python_console_ast_test.py"],
+    deps = [":python_console_ast"],
+    size = "small",
 )

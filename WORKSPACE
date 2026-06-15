@@ -1,6 +1,6 @@
 # -*- python -*-
 
-# Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 workspace(name = "com_github_mjbots_moteus")
 
-BAZEL_VERSION = "3.4.1"
-BAZEL_VERSION_SHA = "1a64c807716e10c872f1618852d95f4893d81667fe6e691ef696489103c9b460"
+BAZEL_VERSION = "7.4.1"
+BAZEL_VERSION_SHA = "c97f02133adce63f0c28678ac1f21d65fa8255c80429b588aeeba8a1fac6202b"
 
 load("//tools/workspace:default.bzl", "add_default_repositories")
 
@@ -36,7 +36,7 @@ bazel_toolchain_dependencies()
 load("@com_github_mjbots_bazel_toolchain//toolchain:rules.bzl", "llvm_toolchain")
 llvm_toolchain(
     name = "llvm_toolchain",
-    llvm_version = "10.0.0",
+    llvm_version = "20.1.8",
     urls = {
         "windows" : ["https://github.com/mjbots/bazel-toolchain/releases/download/0.5.6-mj20201011/LLVM-10.0.0-win64.tar.xz"],
     },
@@ -92,6 +92,12 @@ mbed_repository(
 
         "MBED_APP_START": "0x8010000",
         "MBED_APP_SIZE":  "0x0070000",
+
+        "MBED_US_TIMER_TIM": "TIM15",
+        "MBED_US_TIMER_TIM_USCORE": "TIM15_",
+        "MBED_US_TIMER_USCORE_TIM": "_TIM15",
+        "TIM_MST_IRQ": "TIM1_BRK_TIM15_IRQn",
+        "TIM_MST_BIT_WIDTH": "16",
     },
 )
 
@@ -99,3 +105,64 @@ mbed_repository(
 load("@com_github_mjbots_bazel_deps//tools/workspace:default.bzl",
      bazel_deps_add = "add_default_repositories")
 bazel_deps_add()
+
+# Rust toolchain via rules_rust
+load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
+
+rules_rust_dependencies()
+
+rust_register_toolchains(
+    edition = "2021",
+    versions = ["1.82.0"],
+)
+
+# Rust crate dependencies via crates_repository
+load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
+
+crate_universe_dependencies()
+
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
+
+crates_repository(
+    name = "crate_index",
+    cargo_lockfile = "//lib/rust:Cargo.lock",
+    lockfile = "//lib/rust:Cargo.bazel.lock",
+    packages = {
+        "clap": crate.spec(
+            version = "4.5",
+            features = ["derive"],
+        ),
+        "proc-macro2": crate.spec(
+            version = "1",
+        ),
+        "quote": crate.spec(
+            version = "1",
+        ),
+        "syn": crate.spec(
+            version = "2",
+            features = ["full"],
+        ),
+        # default_features = False omits the libudev feature, which would
+        # otherwise require the system libudev library at build time.  This
+        # matches how mio-serial/tokio-serial already resolve serialport.
+        "serialport": crate.spec(
+            version = "4",
+            default_features = False,
+        ),
+        "tokio": crate.spec(
+            version = "1.0",
+            features = ["net", "io-util", "time", "rt", "rt-multi-thread", "macros", "sync"],
+        ),
+        "tokio-serial": crate.spec(
+            version = "5.4",
+        ),
+        "num_enum": crate.spec(
+            version = "0.7",
+            default_features = False,
+        ),
+    },
+)
+
+load("@crate_index//:defs.bzl", "crate_repositories")
+
+crate_repositories()

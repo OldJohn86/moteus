@@ -1,4 +1,4 @@
-// Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+// Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 
 #include "hal/spi_api.h"
 
+#include "fw/ccm.h"
 #include "fw/moteus_hw.h"
 #include "fw/stm32_spi.h"
 
@@ -28,13 +29,8 @@ class AS5047 {
   using Options = Stm32Spi::Options;
 
   AS5047(const Options& options)
-      : spi_([options]() {
-          // The next frequency down is only 6MHz, so we run a bit out
-          // of tolerance to save a fair amount of time.
-          auto copy = options;
-          copy.frequency = 12000000;
-          return copy;
-        }()) {}
+      : spi_(options) {
+  }
 
   uint16_t Sample() MOTEUS_CCM_ATTRIBUTE {
     return (spi_.write(0xffff) & 0x3fff) << 2;
@@ -45,7 +41,7 @@ class AS5047 {
   }
 
   uint16_t FinishSample() MOTEUS_CCM_ATTRIBUTE {
-    return (spi_.finish_write() & 0x3fff) << 2;
+    return (spi_.finish_write() & 0x3fff);
   }
 
  private:

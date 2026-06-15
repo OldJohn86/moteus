@@ -1,6 +1,6 @@
 # -*- python -*-
 
-# Copyright 2018-2020 Josh Pieper, jjp@pobox.com.
+# Copyright 2023 mjbots Robotic Systems, LLC.  info@mjbots.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,17 @@
 
 package(default_visibility = ["//visibility:public"])
 
-py_binary(
-    name = "calibrate_encoder",
-    srcs = ["calibrate_encoder.py"],
+py_library(
+    name = "encoder_math",
+    srcs = ["encoder_math.py"],
+    imports = ["."],
+)
+
+py_test(
+    name = "encoder_math_test",
+    srcs = ["test/encoder_math_test.py"],
+    deps = [":encoder_math"],
+    size = "small",
 )
 
 py_binary(
@@ -49,8 +57,6 @@ cc_test(
     ],
     data = [
         # Just so they are built.
-        ":calibrate_encoder",
-        ":clock_cal",
         ":dynamometer_drive",
         ":dyno_static_torque_ripple",
         ":firmware_validate",
@@ -87,28 +93,6 @@ cc_binary(
     ],
 )
 
-cc_binary(
-    name = "clock_cal",
-    srcs = [
-        "clock_cal.cc",
-        "line_reader.h",
-    ],
-    deps = [
-        "@com_github_mjbots_mjlib//mjlib/base:assert",
-        "@com_github_mjbots_mjlib//mjlib/base:clipp",
-        "@com_github_mjbots_mjlib//mjlib/base:clipp_archive",
-        "@com_github_mjbots_mjlib//mjlib/base:fail",
-        "@com_github_mjbots_mjlib//mjlib/base:system_error",
-        "@com_github_mjbots_mjlib//mjlib/base:time_conversions",
-        "@com_github_mjbots_mjlib//mjlib/io:now",
-        "@com_github_mjbots_mjlib//mjlib/io:selector",
-        "@com_github_mjbots_mjlib//mjlib/io:stream_factory",
-        "@com_github_mjbots_mjlib//mjlib/multiplex:asio_client",
-        "@com_github_mjbots_mjlib//mjlib/multiplex:stream_asio_client_builder",
-        "@fmt",
-    ],
-)
-
 py_binary(
     name = "dyno_static_torque_ripple",
     srcs = ["dyno_static_torque_ripple.py"],
@@ -117,7 +101,7 @@ py_binary(
     ],
 )
 
-py_binary(
+py_test(
     name = "firmware_validate",
     srcs = ["firmware_validate.py"],
     deps = [
@@ -127,12 +111,48 @@ py_binary(
         ":dynamometer_drive",
         ":dyno_static_torque_ripple",
     ],
+    tags = ["manual"],
 )
 
 test_suite(
     name = "host",
     tests = [
         "test",
+        "encoder_math_test",
+        "mpat_test",
+        "firmware_validate",
         "//utils/gui:host",
+    ],
+)
+
+py_test(
+    name = "mpat_test",
+    srcs = ["test/mpat_test.py"],
+    main = "test/mpat_test.py",
+    data = [":mpat"],
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
+    size = "small",
+)
+
+# Extract core computation logic from mpat.html for CLI use
+genrule(
+    name = "mpat_core",
+    srcs = ["//docs:mpat.html"],
+    outs = ["mpat_core.mjs"],
+    tools = ["extract_mpat_core.sh"],
+    cmd = "$(location extract_mpat_core.sh) $(location //docs:mpat.html) $@",
+)
+
+py_binary(
+    name = "mpat",
+    srcs = ["mpat.py"],
+    data = [
+        "mpat_cli.mjs",
+        ":mpat_core",
+    ],
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
     ],
 )
