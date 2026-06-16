@@ -14,8 +14,15 @@ The project uses **Bazel** as its primary build system. The specific version of 
 
 Unit tests can be run with:
 
-- `tools/bazel test --config=host //:host` - Run small (fast) host tests only
+- `tools/bazel test --config=host //:host` - Run small (fast) host tests only (default `--test_size_filters=small`)
 - `tools/bazel test --test_size_filters= --test_tag_filters=-manual --config=host //:host` - Run full test suite including simulation regression tests (or equivalently, `./travis-ci.sh`)
+- `tools/bazel test --config=host //fw:test` - Run a single test target (also `//fw:slow_test`, `//utils:test`, `//lib/python:host`, `//lib/rust:host`)
+
+CI additionally runs UBSan:
+- `tools/bazel test --test_size_filters= --test_tag_filters=-manual,-no_ubsan --config=host_ubsan //:host`
+
+Flash firmware to a connected board (requires ST-Link, uses OpenOCD):
+- `tools/bazel test --config=target //fw:flash`
 
 The project also exposes a CMake interface for client libraries but does not use CMake for the main build.
 
@@ -95,17 +102,20 @@ from the repository.
 ## Architecture
 
 ### Firmware (fw/)
-- **Core Controller**: `MoteusController` (moteus_controller.h/cc) - Main controller class that orchestrates all subsystems
-- **Motor Control**: `BldcServo` (bldc_servo.h/cc) - Brushless DC motor servo implementation with position/velocity/torque control
+
+The firmware entry point is `moteus.cc`, which wires the mjlib async framework (`mjlib/micro`, `mjlib/multiplex`) into the hardware. Boot sequence: `Fdcan` → `FDCanMicroServer` → `MultiTransportDatagramServer` → `MicroServer` (multiplex protocol) → `MoteusController` → `BldcServo`. The mjlib micro framework is a bare-metal async executor; all subsystems run cooperatively via `Poll()`/`PollMillisecond()` callbacks rather than an RTOS.
+
+- **Core Controller**: `MoteusController` (moteus_controller.h/cc) - Glues all subsystems together
+- **Motor Control**: `BldcServo` (bldc_servo.h/cc) - FOC implementation with position/velocity/torque control loops; `bldc_servo_control.h` and `bldc_servo_position.h` split out inner-loop math
 - **Hardware Abstraction**: `MoteusHw` (moteus_hw.h/cc) - Hardware-specific pin definitions and initialization
 - **Communication**: `fdcan.h/cc` - CAN-FD communication protocol implementation
-- **Motor Sensing**: `MotorPosition` (motor_position.h) - Encoder and position feedback systems
+- **Motor Sensing**: `MotorPosition` (motor_position.h) - Encoder and position feedback systems; supports many encoder types (SPI: MA732, AS5047, BiSS-C, AksIM-2; I2C: CUI AMT21/22)
 - **Power Management**: `drv8323.h/cc` - Gate driver control for power MOSFETs
 
 ### Client Libraries
-- **Python**: `lib/python/moteus/moteus.py` - Main Python client with async support
+- **Python**: `lib/python/moteus/moteus.py` - Main Python client with async support. Key classes: `Controller` (high-level command API), `Stream` (diagnostic/serial tunnel), `QueryResolution`/`PositionResolution` (wire format control). Transport implementations are in separate files: `fdcanusb.py` (USB-CAN adapter), `pythoncan.py` (python-can for socketcan/other), with `Transport` base in `transport.py`.
 - **C++**: `lib/cpp/mjbots/moteus/moteus.h` - C++ client library with blocking and async APIs
-- **Transport**: Multiple transport layers (CAN-FD, fdcanusb, socketcan)
+- **Rust**: `lib/rust/moteus/` - Rust client using builder-pattern commands (`PositionCommand::new().position(0.5)`). Split into `moteus-protocol` (no_std, protocol encoding) and `moteus` (transport + high-level API). Auto-discovers transport at runtime.
 
 ### Hardware Designs (hw/)
 - **controller/**: Legacy r4.11 PCB designs (Eagle CAD)
@@ -114,9 +124,10 @@ from the repository.
 - **x1/**: Latest high-power controller PCB (KiCad)
 
 ### Utilities (utils/)
-- **moteus_tool.py**: Command-line tool for configuration and diagnostics
-- **gui/**: Graphical user interface for real-time monitoring
-- **Calibration tools**: Various encoder and motor calibration utilities
+- **moteus_tool.py**: Command-line tool for configuration, calibration, and diagnostics; also importable as a library
+- **tview.py**: Real-time telemetry viewer (GUI)
+- **Calibration tools**: `compensate_encoder.py`, `compensate_cogging.py`, `measure_inertia.py`, etc.
+- **configs/**: Example `.cfg` files with `conf set` commands for common motor setups (e.g. `moteus-devkit.cfg`)
 
 ### Bazel helpers (tools/)
 
